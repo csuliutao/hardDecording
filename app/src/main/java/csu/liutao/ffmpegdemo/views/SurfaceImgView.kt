@@ -1,15 +1,15 @@
-package csu.liutao.ffmpegdemo
+package csu.liutao.ffmpegdemo.views
 
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
-import android.graphics.Canvas
 import android.graphics.Paint
 import android.os.Build
 import android.util.AttributeSet
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import androidx.annotation.RequiresApi
+import csu.liutao.ffmpegdemo.R
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 class SurfaceImgView public constructor(context: Context, attrs: AttributeSet? = null, attrStyle: Int = 0, resStyle: Int = 0) :
@@ -26,7 +26,10 @@ class SurfaceImgView public constructor(context: Context, attrs: AttributeSet? =
 
     init {
         val typeArray = context.obtainStyledAttributes(attrs, R.styleable.ImgView)
-        val imgId = typeArray.getResourceId(R.styleable.ImgView_imgResource, R.drawable.ic_launcher_background)
+        val imgId = typeArray.getResourceId(
+            R.styleable.ImgView_imgResource,
+            R.drawable.ic_launcher_background
+        )
         typeArray.recycle()
         bitm = BitmapFactory.decodeResource(resources, imgId)
         holder.addCallback(this)
