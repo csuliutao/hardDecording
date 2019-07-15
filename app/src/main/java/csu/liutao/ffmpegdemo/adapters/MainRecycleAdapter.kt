@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import androidx.recyclerview.widget.RecyclerView
 import csu.liutao.ffmpegdemo.R
+import csu.liutao.ffmpegdemo.ativities.RecordsActivity
 import csu.liutao.ffmpegdemo.ativities.SurfaceImgActivity
 
 class MainRecycleAdapter(val context : Context): RecyclerView.Adapter<MainRecycleAdapter.MainHolder>() {
@@ -20,6 +21,8 @@ class MainRecycleAdapter(val context : Context): RecyclerView.Adapter<MainRecycl
         decs.add("surface image view display")
         intents.add(Intent(context, SurfaceImgActivity::class.java))
 
+        decs.add("audio record , audio track demo")
+        intents.add(Intent(context, RecordsActivity::class.java))
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainHolder {
