@@ -5,13 +5,11 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
-import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import csu.liutao.ffmpegdemo.R
-import csu.liutao.ffmpegdemo.audios.RecordMgr
+import csu.liutao.ffmpegdemo.audios.AudioMgr
 import csu.liutao.ffmpegdemo.adapters.RecordAdapter
 import csu.liutao.ffmpegdemo.audios.AudioRecordMgr
 import csu.liutao.ffmpegdemo.audios.AudioTrackMgr
@@ -31,11 +29,11 @@ class RecordsActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.records_activity)
-        RecordMgr.mgr.initRecordDir(this)
+        AudioMgr.mgr.initRecordDir(this)
 
 
         adapter = RecordAdapter(this)
-        adapter.updateData(RecordMgr.mgr.getFiles())
+        adapter.updateData(AudioMgr.mgr.getFiles())
 
         recyclerView = findViewById(R.id.recycle_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -49,7 +47,7 @@ class RecordsActivity : AppCompatActivity() {
         AudioRecordMgr.instance.callback = object :AudioRecordMgr.OnRecordSucess {
             override fun onSucess() {
                 runOnUiThread {
-                    adapter.updateData(RecordMgr.mgr.getFiles())
+                    adapter.updateData(AudioMgr.mgr.getFiles())
                 }
             }
         }

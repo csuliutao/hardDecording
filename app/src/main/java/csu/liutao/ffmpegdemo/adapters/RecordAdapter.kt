@@ -1,7 +1,7 @@
 package csu.liutao.ffmpegdemo.adapters
 
+import android.app.Activity
 import android.content.Context
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,19 +10,27 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.audios.AudioTrackMgr
-import csu.liutao.ffmpegdemo.audios.RecordMgr
+import csu.liutao.ffmpegdemo.audios.AudioMgr
 import java.io.File
 
-class RecordAdapter(var context: Context): RecyclerView.Adapter<RecordAdapter.ViewHolder>() {
+class RecordAdapter(var context: Activity): RecyclerView.Adapter<RecordAdapter.ViewHolder>(), AudioTrackMgr.FinishListener {
     private val files = ArrayList<File>()
     private lateinit var inflater : LayoutInflater
 
-    private var prePos : Int = RecordMgr.INVALID_POS
-    private var curPos : Int = RecordMgr.INVALID_POS
+    private var prePos : Int = AudioMgr.INVALID_POS
+    private var curPos : Int = AudioMgr.INVALID_POS
     private var isPause = true
 
     init {
         inflater = LayoutInflater.from(context)
+        AudioTrackMgr.instance.pauseListener = this
+    }
+
+    override fun onFinished() {
+        context.runOnUiThread {
+            isPause = true
+            notifyItemChanged(curPos)
+        }
     }
 
     fun updateData(list : List<File>) {
@@ -69,7 +77,7 @@ class RecordAdapter(var context: Context): RecyclerView.Adapter<RecordAdapter.Vi
                 }
             }
             adapter.notifyItemChanged(adapter.curPos)
-            if (adapter.prePos != RecordMgr.INVALID_POS) adapter.notifyItemChanged(adapter.prePos)
+            if (adapter.prePos != AudioMgr.INVALID_POS) adapter.notifyItemChanged(adapter.prePos)
         }
     }
 

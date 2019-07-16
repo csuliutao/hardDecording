@@ -1,4 +1,4 @@
-package csu.liutao.ffmpegdemo.audios
+package csu.liutao.ffmpegdemo.views
 
 import android.content.Context
 import android.os.Build
@@ -7,6 +7,7 @@ import android.view.MotionEvent
 import android.widget.Button
 import androidx.annotation.RequiresApi
 import csu.liutao.ffmpegdemo.R
+import csu.liutao.ffmpegdemo.audios.AudioRecordMgr
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 class AudioRecordView(con: Context, attrs: AttributeSet?, attrStyle: Int, resStyle: Int) :

@@ -11,35 +11,36 @@ class AudioRecordMgr private constructor(){
     var curState = RecordState.RELEASE
 
     private var isRecording = false
+        set(value) {
+            synchronized(this) {
+                field = value
+            }
+        }
+        get() {
+            synchronized(this) {
+                return field
+            }
+        }
 
     private var bufferSize = 0
     private var audioRecord : AudioRecord? = null
 
     lateinit var callback : OnRecordSucess
 
-    fun setRecordState(state :Boolean) {
-        synchronized(instance) {
-            isRecording = state
-        }
-    }
-
-    fun isInRecording() : Boolean {
-        synchronized(instance) {
-            return isRecording
-        }
+    init {
+        bufferSize = AudioRecord.getMinBufferSize(AudioMgr.SAMPLE_RATE, AudioMgr.CHANNEL_CONFIG, AudioMgr.AUDIO_FORMAT)
     }
 
     private fun prepare() {
-        bufferSize = AudioRecord.getMinBufferSize(RecordMgr.SAMPLE_RATE, RecordMgr.CHANNEL_CONFIG, RecordMgr.AUDIO_FORMAT)
-        audioRecord = AudioRecord(RecordMgr.AUDIO_SOURCE, RecordMgr.SAMPLE_RATE, RecordMgr.CHANNEL_CONFIG, RecordMgr.AUDIO_FORMAT, bufferSize)
+        audioRecord = AudioRecord(AudioMgr.AUDIO_SOURCE, AudioMgr.SAMPLE_RATE, AudioMgr.CHANNEL_CONFIG, AudioMgr.AUDIO_FORMAT, bufferSize)
     }
 
 
     fun paly() {
         prepare()
         curState = RecordState.PLAY
-        if (!isInRecording()) {
-            setRecordState(true)
+        if (!isRecording) {
+            isRecording = true
             audioRecord!!.startRecording()
 
             RecordThread(getNewFile()).start()
@@ -49,20 +50,20 @@ class AudioRecordMgr private constructor(){
     private fun getNewFile(): File {
         val formater = SimpleDateFormat(TIME_FORMAT)
         val date = Calendar.getInstance()
-        val name = formater.format(date.time)+RecordMgr.END_TAG
+        val name = formater.format(date.time)+AudioMgr.END_TAG
         Log.e("liutao-e", name)
-        val file = File(RecordMgr.mgr.getRecordDir(), name)
+        val file = File(AudioMgr.mgr.getRecordDir(), name)
         file.createNewFile()
         return file
     }
 
     fun pause() {
         curState = RecordState.PAUSE
-        setRecordState(false)
+        isRecording = false
     }
 
     private fun release() {
-        audioRecord!!.release()
+        audioRecord?.release()
         audioRecord = null
     }
 

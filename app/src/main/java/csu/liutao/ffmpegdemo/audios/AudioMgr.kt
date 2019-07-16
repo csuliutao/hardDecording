@@ -2,13 +2,12 @@ package csu.liutao.ffmpegdemo.audios
 
 import android.content.Context
 import android.media.AudioFormat
-import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.util.Log
 import java.io.File
 
-class RecordMgr private constructor(){
-    private val TAG = "RecordMgr"
+class AudioMgr private constructor(){
+    private val TAG = "AudioMgr"
     private val PATH = "records"
 
     private var isInitDir = false;
@@ -41,7 +40,7 @@ class RecordMgr private constructor(){
     }
 
     companion object {
-        val mgr = RecordMgr()
+        val mgr = AudioMgr()
         val INVALID_POS = -1
 
         val AUDIO_SOURCE = MediaRecorder.AudioSource.MIC
