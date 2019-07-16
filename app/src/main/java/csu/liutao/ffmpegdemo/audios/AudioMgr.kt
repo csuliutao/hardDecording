@@ -8,7 +8,7 @@ import java.io.File
 
 class AudioMgr private constructor(){
     private val TAG = "AudioMgr"
-    private val PATH = "records"
+    private val PATH = "audios"
 
     private var isInitDir = false;
 
