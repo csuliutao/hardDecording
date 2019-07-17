@@ -9,6 +9,7 @@ import android.util.AttributeSet
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import androidx.annotation.RequiresApi
+import csu.liutao.ffmpegdemo.PictureMgr
 import csu.liutao.ffmpegdemo.R
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -25,13 +26,19 @@ class SurfaceImgView public constructor(context: Context, attrs: AttributeSet? =
     private var paint = Paint(Paint.ANTI_ALIAS_FLAG)
 
     init {
-        val typeArray = context.obtainStyledAttributes(attrs, R.styleable.ImgView)
-        val imgId = typeArray.getResourceId(
-            R.styleable.ImgView_imgResource,
-            R.drawable.ic_launcher_background
-        )
-        typeArray.recycle()
-        bitm = BitmapFactory.decodeResource(resources, imgId)
+        PictureMgr.instance.initDir(context)
+        val file = PictureMgr.instance.getLastPic()
+        if (file == null) {
+            val typeArray = context.obtainStyledAttributes(attrs, R.styleable.ImgView)
+            val imgId = typeArray.getResourceId(
+                R.styleable.ImgView_imgResource,
+                R.drawable.ic_launcher_background
+            )
+            typeArray.recycle()
+            bitm = BitmapFactory.decodeResource(resources, imgId)
+        } else {
+            bitm = BitmapFactory.decodeFile(file.canonicalPath)
+        }
         holder.addCallback(this)
     }
 

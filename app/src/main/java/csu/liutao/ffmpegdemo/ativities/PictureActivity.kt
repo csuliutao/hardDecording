@@ -14,8 +14,12 @@ import android.view.SurfaceView
 import android.widget.Button
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import csu.liutao.ffmpegdemo.PictureMgr
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.Utils
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.FileOutputStream
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 class PictureActivity :AppCompatActivity() {
@@ -29,15 +33,13 @@ class PictureActivity :AppCompatActivity() {
 
     private lateinit var subHandler : Handler
 
+    private val subThread = HandlerThread("pciture_acitivity")
 
-    private var isCameraSessionReady = false
     private val mainHandler = Handler()
 
     private val CAMERA_REQUESE_CODE = 5
 
-    private lateinit var cameraCaptureSession: CameraCaptureSession
-
-    private var isTakePicture = false
+    private var cameraCaptureSession: CameraCaptureSession? = null
 
 
     private val callback = object : CameraDevice.StateCallback() {
@@ -62,10 +64,9 @@ class PictureActivity :AppCompatActivity() {
 
         override fun onConfigured(session: CameraCaptureSession) {
             cameraCaptureSession = session
-            if (!isCameraSessionReady) {
-                isCameraSessionReady = true
-                takePreview()
-            }
+            val captureBuild = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+            captureBuild.addTarget(surfaceView.holder.surface)
+            cameraCaptureSession!!.setRepeatingRequest(captureBuild.build(), null, subHandler)
 
             Utils.log("onConfigured")
         }
@@ -77,9 +78,8 @@ class PictureActivity :AppCompatActivity() {
         surfaceView = findViewById(R.id.picture)
         capture = findViewById(R.id.capture)
 
-        val thread = HandlerThread("pciture_acitivity")
-        thread.start()
-        subHandler = Handler(thread.looper)
+        subThread.start()
+        subHandler = Handler(subThread.looper)
 
         surfaceView.holder.addCallback(object : SurfaceHolder.Callback {
             override fun surfaceChanged(holder: SurfaceHolder?, format: Int, width: Int, height: Int) {
@@ -94,7 +94,6 @@ class PictureActivity :AppCompatActivity() {
         })
 
         capture.setOnClickListener{
-            isTakePicture = true
             takePicture()
         }
 
@@ -105,16 +104,21 @@ class PictureActivity :AppCompatActivity() {
     }
 
     private fun takePicture() {
+        PictureMgr.instance.initDir(this)
         val captureRequest = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
         captureRequest.addTarget(imageReader.surface)
-        cameraCaptureSession.capture(captureRequest.build(),null , subHandler)
+        cameraCaptureSession!!.capture(captureRequest.build(),null , subHandler)
     }
 
     private fun releaseCamera() {
+        cameraCaptureSession?.close()
+        cameraCaptureSession = null
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
             cameraDevice?.close()
         }
         cameraDevice = null
+
+        subThread.quitSafely()
     }
 
     @SuppressLint("MissingPermission")
@@ -131,19 +135,24 @@ class PictureActivity :AppCompatActivity() {
         cameraDevice!!.createCaptureSession(list, sessionCallback, subHandler)
     }
 
-
-    private fun takePreview() {
-        val captureBuild = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
-        captureBuild.addTarget(surfaceView.holder.surface)
-        while (!isTakePicture) {
-            cameraCaptureSession.capture(captureBuild.build(), null, subHandler)
-        }
-
-    }
-
     private fun initImageReader() {
         imageReader = ImageReader.newInstance(surfaceView.width, surfaceView.height, ImageFormat.JPEG, 1)
         imageReader.setOnImageAvailableListener({
+            val image = it.acquireNextImage()
+            val byteBuffer = image.planes[0].buffer
+            val file = PictureMgr.instance.getFile()
+
+            val fileWrite = FileOutputStream(file)
+            val channel = fileWrite.channel
+            while (byteBuffer.hasRemaining()) {
+                channel.position(0)
+                channel.write(byteBuffer)
+                fileWrite.flush()
+            }
+
+            channel.close()
+            fileWrite.close()
+            it.close()
             Utils.log("imageReader img available")
         }, subHandler)
     }

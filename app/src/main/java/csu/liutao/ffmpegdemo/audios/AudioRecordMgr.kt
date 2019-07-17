@@ -2,6 +2,7 @@ package csu.liutao.ffmpegdemo.audios
 
 import android.media.AudioRecord
 import android.util.Log
+import csu.liutao.ffmpegdemo.Utils
 import java.io.File
 import java.io.FileOutputStream
 import java.text.SimpleDateFormat
@@ -43,18 +44,8 @@ class AudioRecordMgr private constructor(){
             isRecording = true
             audioRecord!!.startRecording()
 
-            RecordThread(getNewFile()).start()
+            RecordThread(Utils.getNewFile(TIME_FORMAT, AudioMgr.mgr.getRecordDir(), AudioMgr.END_TAG)).start()
         }
-    }
-
-    private fun getNewFile(): File {
-        val formater = SimpleDateFormat(TIME_FORMAT)
-        val date = Calendar.getInstance()
-        val name = formater.format(date.time)+AudioMgr.END_TAG
-        Log.e("liutao-e", name)
-        val file = File(AudioMgr.mgr.getRecordDir(), name)
-        file.createNewFile()
-        return file
     }
 
     fun pause() {
