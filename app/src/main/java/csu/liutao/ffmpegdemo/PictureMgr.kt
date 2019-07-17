@@ -26,7 +26,7 @@ class PictureMgr private constructor(){
     }
 
     fun getFile() : File {
-        return Utils.getNewFile(AudioRecordMgr.TIME_FORMAT, picDir, END_TAG)
+        return Utils.getNewFile(picDir, END_TAG)
     }
 
 

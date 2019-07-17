@@ -10,11 +10,14 @@ import java.util.*
 class Utils private constructor(){
     companion object{
         val TAG = "liutao_e"
+
+        val TIME_FORMAT = "YYMMddHHmmss"
+
         fun log(str : String) : Unit {
             Log.e(TAG, str)
         }
 
-        fun getNewFile(format:String, dir:String, endTag:String) : File {
+        fun getNewFile(dir:String, endTag:String, format:String = TIME_FORMAT) : File {
             val formater = SimpleDateFormat(format)
             val date = Calendar.getInstance()
             val name = formater.format(date.time)+ endTag

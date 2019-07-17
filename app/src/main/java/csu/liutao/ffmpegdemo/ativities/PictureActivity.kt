@@ -151,7 +151,8 @@ class PictureActivity :AppCompatActivity() {
 
         val fileWrite = FileOutputStream(file)
         val channel = fileWrite.channel
-        while (byteBuffer.hasRemaining()) {
+        if (byteBuffer.hasRemaining()) {
+            Utils.log("bytebuffer times")
             channel.position(0)
             channel.write(byteBuffer)
             fileWrite.flush()

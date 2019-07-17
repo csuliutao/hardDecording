@@ -25,6 +25,10 @@
         <activity android:name=".ativities.RecordsActivity"/>
 
         <activity android:name=".ativities.PictureActivity"/>
+
+        <activity android:name=".ativities.MediasActivity"/>
+
+        <activity android:name=".ativities.MediaRecordActivity"/>
     </application>
 
 </manifest>
