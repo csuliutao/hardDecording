@@ -51,7 +51,12 @@ class SurfaceImgView public constructor(context: Context, attrs: AttributeSet? =
     override fun surfaceCreated(holder: SurfaceHolder?) {
         if (holder != null) {
             val canvas = holder.lockCanvas()
+            val wScale = canvas.width.toFloat() / bitm.width
+            val hScale = canvas.height.toFloat() / bitm.height
+            canvas.save()
+            canvas.scale(wScale, hScale)
             canvas.drawBitmap(bitm, 0F, 0F, paint)
+            canvas.restore()
             holder.unlockCanvasAndPost(canvas)
         }
     }

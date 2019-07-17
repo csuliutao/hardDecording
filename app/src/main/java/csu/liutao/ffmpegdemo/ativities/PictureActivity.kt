@@ -3,6 +3,7 @@ package csu.liutao.ffmpegdemo.ativities
 import android.Manifest
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.ImageFormat
 import android.hardware.camera2.*
@@ -107,6 +108,7 @@ class PictureActivity :AppCompatActivity() {
         PictureMgr.instance.initDir(this)
         val captureRequest = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_STILL_CAPTURE)
         captureRequest.addTarget(imageReader.surface)
+        captureRequest.set(CaptureRequest.JPEG_ORIENTATION, 90)
         cameraCaptureSession!!.capture(captureRequest.build(),null , subHandler)
     }
 
@@ -138,23 +140,29 @@ class PictureActivity :AppCompatActivity() {
     private fun initImageReader() {
         imageReader = ImageReader.newInstance(surfaceView.width, surfaceView.height, ImageFormat.JPEG, 1)
         imageReader.setOnImageAvailableListener({
-            val image = it.acquireNextImage()
-            val byteBuffer = image.planes[0].buffer
-            val file = PictureMgr.instance.getFile()
-
-            val fileWrite = FileOutputStream(file)
-            val channel = fileWrite.channel
-            while (byteBuffer.hasRemaining()) {
-                channel.position(0)
-                channel.write(byteBuffer)
-                fileWrite.flush()
-            }
-
-            channel.close()
-            fileWrite.close()
-            it.close()
-            Utils.log("imageReader img available")
+            savePicAndShow(it)
         }, subHandler)
+    }
+
+    private fun savePicAndShow(it : ImageReader) {
+        val image = it.acquireNextImage()
+        val byteBuffer = image.planes[0].buffer
+        val file = PictureMgr.instance.getFile()
+
+        val fileWrite = FileOutputStream(file)
+        val channel = fileWrite.channel
+        while (byteBuffer.hasRemaining()) {
+            channel.position(0)
+            channel.write(byteBuffer)
+            fileWrite.flush()
+        }
+
+        channel.close()
+        fileWrite.close()
+        it.close()
+        Utils.log("imageReader img available")
+        finish()
+        startActivity(Intent(this, SurfaceImgActivity::class.java))
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
