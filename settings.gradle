@@ -1,1 +1,1 @@
-include ':app', ':ffmpegmgr'
+include ':app'

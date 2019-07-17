@@ -11,6 +11,7 @@ import android.hardware.camera2.CameraCaptureSession
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraDevice
 import android.hardware.camera2.CameraManager
+import android.media.Image
 import android.media.ImageReader
 import android.os.Build
 import android.os.Bundle
@@ -24,10 +25,11 @@ import androidx.appcompat.app.AppCompatActivity
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.medias.MediaMgr
+import java.io.File
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 class MediaRecordActivity : AppCompatActivity (){
-    private val curFile = MediaMgr.instance.getNewFile()
+    private var curFile : File? = null
     private var isSaved = false
 
     private lateinit var textureView : TextureView
@@ -122,9 +124,17 @@ class MediaRecordActivity : AppCompatActivity (){
         imageReader = ImageReader.newInstance(textureView.width, textureView.height, PixelFormat.RGBA_8888, 2)
         imageReader.setOnImageAvailableListener(object : ImageReader.OnImageAvailableListener {
             override fun onImageAvailable(reader: ImageReader?) {
+                if (reader == null) return
+                val image = reader!!.acquireNextImage()
+                processImage(image)
+                image!!.close()
                 Utils.log("imageReader")
             }
         }, subHandler)
+    }
+
+    private fun processImage(image: Image?) {
+        curFile?.delete()
     }
 
     @SuppressLint("MissingPermission")
@@ -146,6 +156,7 @@ class MediaRecordActivity : AppCompatActivity (){
         button.setOnClickListener{
             if (!isSaved) {
                 isSaved = true
+                curFile = MediaMgr.instance.getNewFile()
                 startRecord()
             } else {
                 stopRecord()
@@ -166,7 +177,6 @@ class MediaRecordActivity : AppCompatActivity (){
 
     override fun onDestroy() {
         super.onDestroy()
-        if (!isSaved) curFile.delete()
         cameraSession?.close()
         cameraSession = null
 
