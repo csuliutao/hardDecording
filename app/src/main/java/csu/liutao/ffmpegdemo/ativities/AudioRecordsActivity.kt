@@ -9,22 +9,16 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import csu.liutao.ffmpegdemo.R
+import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.audios.AudioMgr
 import csu.liutao.ffmpegdemo.adapters.RecordAdapter
 import csu.liutao.ffmpegdemo.audios.AudioRecordMgr
 import csu.liutao.ffmpegdemo.audios.AudioTrackMgr
 
-class RecordsActivity : AppCompatActivity() {
+class AudioRecordsActivity : AppCompatActivity() {
 
     lateinit var recyclerView: RecyclerView
     lateinit var adapter :RecordAdapter
-
-    val recordPermissionCode = 10
-
-    val hanlder = Handler() {
-
-        true
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,10 +33,7 @@ class RecordsActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
 
-        val hasAudio = packageManager.checkPermission(Manifest.permission.RECORD_AUDIO, packageName) == PackageManager.PERMISSION_GRANTED
-        if (!hasAudio && Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-            requestPermissions(arrayOf(Manifest.permission.RECORD_AUDIO), recordPermissionCode)
-        }
+        Utils.checkeAudioPermission(this)
 
         AudioRecordMgr.instance.callback = object :AudioRecordMgr.OnRecordSucess {
             override fun onSucess() {
@@ -50,6 +41,13 @@ class RecordsActivity : AppCompatActivity() {
                     adapter.updateData(AudioMgr.mgr.getFiles())
                 }
             }
+        }
+    }
+
+    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == Utils.AUDIO_REQUESE_CODE) {
+            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) finish()
         }
     }
 

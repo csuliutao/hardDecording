@@ -44,7 +44,7 @@ class AudioRecordMgr private constructor(){
             isRecording = true
             audioRecord!!.startRecording()
 
-            RecordThread(Utils.getNewFile(TIME_FORMAT, AudioMgr.mgr.getRecordDir(), AudioMgr.END_TAG)).start()
+            RecordThread(Utils.getNewFile(AudioMgr.mgr.getRecordDir(), AudioMgr.END_TAG)).start()
         }
     }
 
@@ -84,7 +84,6 @@ class AudioRecordMgr private constructor(){
 
     companion object {
         val instance = AudioRecordMgr()
-        val TIME_FORMAT = "YYMMddHHmmss"
     }
 
     enum class RecordState (var isRecording : Boolean, var display :String) {

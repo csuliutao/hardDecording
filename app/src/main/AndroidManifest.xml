@@ -22,7 +22,7 @@
 
         <activity android:name=".ativities.SurfaceImgActivity"/>
 
-        <activity android:name=".ativities.RecordsActivity"/>
+        <activity android:name=".ativities.AudioRecordsActivity"/>
 
         <activity android:name=".ativities.PictureActivity"/>
 

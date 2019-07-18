@@ -38,8 +38,6 @@ class PictureActivity :AppCompatActivity() {
 
     private val mainHandler = Handler()
 
-    private val CAMERA_REQUESE_CODE = 5
-
     private var cameraCaptureSession: CameraCaptureSession? = null
 
 
@@ -91,17 +89,15 @@ class PictureActivity :AppCompatActivity() {
             }
 
             override fun surfaceCreated(holder: SurfaceHolder?) {
-                initCamera()            }
+                if (Utils.checkCameraPermission(this@PictureActivity)) initCamera()
+            }
         })
 
         capture.setOnClickListener{
             takePicture()
         }
 
-        if (packageManager.checkPermission(Manifest.permission.CAMERA, packageName) != PackageManager.PERMISSION_GRANTED
-            && Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {
-            requestPermissions(arrayOf(Manifest.permission.CAMERA), CAMERA_REQUESE_CODE)
-        }
+
     }
 
     private fun takePicture() {
@@ -168,8 +164,12 @@ class PictureActivity :AppCompatActivity() {
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == CAMERA_REQUESE_CODE) {
-            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) finish()
+        if (requestCode == Utils.CAMERA_REQUESE_CODE) {
+            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                finish()
+            } else {
+                initCamera()
+            }
         }
     }
 }

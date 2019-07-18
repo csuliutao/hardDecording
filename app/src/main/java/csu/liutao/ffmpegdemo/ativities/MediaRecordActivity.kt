@@ -43,8 +43,6 @@ class MediaRecordActivity : AppCompatActivity (){
 
     private var cameraSession :CameraCaptureSession? = null
 
-    private val reqCode = 10
-
     private val mainHandler = Handler()
 
     private val subThread = HandlerThread("MediaRecordActivity")
@@ -65,12 +63,7 @@ class MediaRecordActivity : AppCompatActivity (){
 
         override fun onSurfaceTextureAvailable(surface: SurfaceTexture?, width: Int, height: Int) {
             mSurface = Surface(surface)
-            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M &&
-                packageManager.checkPermission(Manifest.permission.CAMERA, packageName) != PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(arrayOf(Manifest.permission.CAMERA), reqCode)
-            } else {
-                initCamera()
-            }
+            if (Utils.checkCameraPermission(this@MediaRecordActivity)) initCamera()
         }
     }
 
@@ -169,9 +162,12 @@ class MediaRecordActivity : AppCompatActivity (){
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        if (reqCode == reqCode) {
-            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) finish()
-            initCamera()
+        if (requestCode == Utils.CAMERA_REQUESE_CODE) {
+            if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                finish()
+            } else {
+                initCamera()
+            }
         }
     }
 

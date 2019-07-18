@@ -10,7 +10,7 @@ import androidx.recyclerview.widget.RecyclerView
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.ativities.MediasActivity
 import csu.liutao.ffmpegdemo.ativities.PictureActivity
-import csu.liutao.ffmpegdemo.ativities.RecordsActivity
+import csu.liutao.ffmpegdemo.ativities.AudioRecordsActivity
 import csu.liutao.ffmpegdemo.ativities.SurfaceImgActivity
 
 class MainRecycleAdapter(val context : Context): RecyclerView.Adapter<MainRecycleAdapter.MainHolder>() {
@@ -24,7 +24,7 @@ class MainRecycleAdapter(val context : Context): RecyclerView.Adapter<MainRecycl
         intents.add(Intent(context, SurfaceImgActivity::class.java))
 
         decs.add("audio record , audio track demo")
-        intents.add(Intent(context, RecordsActivity::class.java))
+        intents.add(Intent(context, AudioRecordsActivity::class.java))
 
         decs.add("camera take picture")
         intents.add(Intent(context, PictureActivity::class.java))
