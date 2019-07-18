@@ -10,8 +10,6 @@ import java.util.*
 class MediaMgr private constructor(){
     private val PATH = "medias"
     private val END_TAG = ".mp4"
-    val VEDIO_H264 = "video/avc"
-    val AUDIO_AAC = "audio/mp4a-latm"
 
     val MEDIA_FORMAT = MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4
 
