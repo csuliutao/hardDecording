@@ -10,6 +10,16 @@ class AudioTrackMgr private constructor(){
     private var curFile : File? = null
     private var minBuffer: Int = 0
     private var audioTrack : AudioTrack? = null
+        set(value) {
+            synchronized(instance) {
+                field = value
+            }
+        }
+        get() {
+            synchronized(instance) {
+                return field
+            }
+        }
     private var isPaused = false
         set(value) {
             synchronized(this) {
@@ -21,7 +31,6 @@ class AudioTrackMgr private constructor(){
                 return field
             }
         }
-    private var lastCount = 0L
     var pauseListener : FinishListener? = null
 
     init {
@@ -31,13 +40,11 @@ class AudioTrackMgr private constructor(){
     fun play(file : File){
         if (curFile != null) pause()
         curFile = file
-        lastCount = 0
         replay()
     }
 
     fun pause(){
         isPaused = true
-        release()
     }
 
     fun replay(){
@@ -94,7 +101,6 @@ class AudioTrackMgr private constructor(){
                 val inSize = extractor.readSampleData(inBuffer, 0)
                 if (inSize < 0)
                 {
-                    AudioTrackMgr.instance.lastCount = 0
                     AudioTrackMgr.instance.pauseListener?.onFinished()
                     return
                 }
@@ -109,7 +115,7 @@ class AudioTrackMgr private constructor(){
                     outBuffer.limit(info.size)
                     outBuffer.get(buffer, 0, info.size)
                     outBuffer.clear()
-                    AudioTrackMgr.instance.audioTrack!!.write(buffer, 0, info.size)
+                    AudioTrackMgr.instance.audioTrack?.write(buffer, 0, info.size)
                     decoder.releaseOutputBuffer(oindex, 0)
                     oindex = decoder.dequeueOutputBuffer(info, 0)
                 }
