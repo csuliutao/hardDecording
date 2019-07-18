@@ -1,6 +1,8 @@
 package csu.liutao.ffmpegdemo.medias
 
 import android.content.Context
+import android.media.MediaCodecInfo
+import android.media.MediaFormat
 import android.media.MediaMuxer
 import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.audios.AudioMgr
@@ -10,8 +12,6 @@ import java.util.*
 class MediaMgr private constructor(){
     private val PATH = "medias"
     private val END_TAG = ".mp4"
-
-    val MEDIA_FORMAT = MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4
 
     private lateinit var mediaDir :String
 
@@ -33,8 +33,26 @@ class MediaMgr private constructor(){
         return Utils.getNewFile(mediaDir, END_TAG)
     }
 
+    fun getH264CodecFromat(width : Int, height: Int) : MediaFormat {
+        val format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height)
+        format.setInteger(MediaFormat.KEY_BIT_RATE, KEY_BIT_RATE * width * height * KEY_FRAME_RATE)
+        format.setInteger(MediaFormat.KEY_FRAME_RATE, KEY_FRAME_RATE)
+        format.setInteger(MediaFormat.KEY_COLOR_FORMAT, KEY_COLOR_FORMAT)
+        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, KEY_I_FRAME_INTERVAL)
+
+//        format.setInteger(MediaFormat.KEY_ROTATION, KEY_ROTATION)
+//        format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, width * height * 6)
+        return format
+    }
+
 
     companion object{
         val instance = MediaMgr()
+        val KEY_BIT_RATE = 3
+        val KEY_FRAME_RATE = 30
+        val KEY_COLOR_FORMAT = MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible
+        val KEY_ROTATION = 90
+        val KEY_I_FRAME_INTERVAL = 2
+//        val MAX_INPUT_SIZE = 4096
     }
 }

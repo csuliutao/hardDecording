@@ -29,6 +29,8 @@
         <activity android:name=".ativities.MediasActivity"/>
 
         <activity android:name=".ativities.MediaRecordActivity"/>
+
+        <activity android:name=".ativities.MediaPlayActivity"/>
     </application>
 
 </manifest>

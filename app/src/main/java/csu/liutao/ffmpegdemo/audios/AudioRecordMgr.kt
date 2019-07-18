@@ -69,7 +69,6 @@ class AudioRecordMgr private constructor(){
             val format =  MediaFormat.createAudioFormat(MediaFormat.MIMETYPE_AUDIO_AAC, AudioMgr.SAMPLE_RATE, AudioMgr.CHANNEL_COUNT)
             format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, AudioRecordMgr.instance.bufferSize)
             format.setInteger(MediaFormat.KEY_AAC_PROFILE, AudioMgr.KEY_AAC_PROFILE)
-            format.setInteger(MediaFormat.KEY_SAMPLE_RATE, AudioMgr.SAMPLE_RATE)
             format.setInteger(MediaFormat.KEY_BIT_RATE, 64000)
             encoder.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
             encoder.start()

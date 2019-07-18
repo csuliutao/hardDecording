@@ -1,12 +1,15 @@
 package csu.liutao.ffmpegdemo.adapters
 
 import android.content.Context
+import android.content.Intent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import androidx.recyclerview.widget.RecyclerView
 import csu.liutao.ffmpegdemo.R
+import csu.liutao.ffmpegdemo.Utils
+import csu.liutao.ffmpegdemo.ativities.MediaPlayActivity
 import csu.liutao.ffmpegdemo.medias.MediaMgr
 import java.io.File
 
@@ -46,6 +49,12 @@ class MediasAdapter(var context : Context) : RecyclerView.Adapter<MediasAdapter.
 
     override fun onBindViewHolder(holder: Holder, position: Int) {
         holder.button.text = medias.get(position).name
+        holder.button.setOnClickListener {
+            val intent = Intent(context, MediaPlayActivity::class.java)
+            intent.putExtra(Utils.PLAY_FILE, medias.get(position))
+            context.startActivity(intent)
+        }
+
     }
 
     class Holder(item : View) : RecyclerView.ViewHolder(item) {

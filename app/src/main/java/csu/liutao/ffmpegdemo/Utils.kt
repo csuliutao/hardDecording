@@ -21,6 +21,8 @@ class Utils private constructor(){
 
         val AUDIO_REQUESE_CODE = 6
 
+        val PLAY_FILE = "PLAY_FILE"
+
         fun log(str : String) : Unit {
             Log.e(TAG, str)
         }
