@@ -90,7 +90,7 @@ class MediaRecordActivity : AppCompatActivity (){
 
 //    private lateinit var encodeCallback : EncodeCallback
 
-    private lateinit var encodeSuface : Surface
+//    private lateinit var encodeSuface : Surface
 
     private fun initCameraSeesion() {
         initImageReader()
@@ -129,7 +129,7 @@ class MediaRecordActivity : AppCompatActivity (){
 
     private fun initImageReader() {
         Utils.log("width =" + textureView.width + ", h = "+ textureView.height)
-        imageReader = ImageReader.newInstance(textureView.width / 2, textureView.height / 2, ImageFormat.YUV_420_888, 2)
+        imageReader = ImageReader.newInstance(textureView.width, textureView.height, ImageFormat.YUV_420_888, 2)
         imageReader.setOnImageAvailableListener(object : ImageReader.OnImageAvailableListener {
             override fun onImageAvailable(reader: ImageReader?) {
                 if (reader == null) return
@@ -148,19 +148,19 @@ class MediaRecordActivity : AppCompatActivity (){
         if (size != 3) throw Exception("image data is wrong")
         val yBuffer = plants[0].buffer
         val ySize = yBuffer.remaining()
-        val uBuffer = plants[1].buffer
-        val uSize = uBuffer.remaining()
+      /*  val uBuffer = plants[1].buffer
+        val uSize = uBuffer.remaining()*/
         val vBuffer = plants[2].buffer
         val vSize = vBuffer.remaining()
 
-        val allSize = ySize + uSize + vSize
+        val allSize = ySize /*+ uSize*/ + vSize
         val srcByte = ByteArray(allSize)
 
-        Utils.log("y ="+ ySize+",v="+vSize+"u="+uSize)
+        Utils.log("y ="+ ySize+",v="+vSize/*+"u="+uSize*/)
         //nV21
         yBuffer.get(srcByte, 0, ySize)
-        uBuffer.get(srcByte, ySize, uSize)
-        vBuffer.get(srcByte, ySize + uSize, vSize)
+//        uBuffer.get(srcByte, ySize, uSize)
+        vBuffer.get(srcByte, ySize /*+ uSize*/, vSize)
 
         /*var curSize = 0
         while (curSize < allSize) {
