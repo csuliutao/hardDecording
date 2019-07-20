@@ -89,9 +89,11 @@ class Camera2Mgr private constructor() {
         val format = if (isForPicture) CameraDevice.TEMPLATE_STILL_CAPTURE else CameraDevice.TEMPLATE_RECORD
         val requestBuilder = cameraDevice!!.createCaptureRequest(format)
         requestBuilder.addTarget(previewSurface)
-        if (addImageReader) requestBuilder.addTarget(imageReader!!.surface)
         if (addImageReader) {
+            requestBuilder.addTarget(imageReader!!.surface)
             requestBuilder.set(CaptureRequest.JPEG_ORIENTATION, 90)
+        }
+        if (addImageReader && isForPicture) {
             cameraSession!!.capture(requestBuilder.build(), null, subHandler)
         } else {
             cameraSession!!.setRepeatingRequest(requestBuilder.build(), null, subHandler)
