@@ -109,7 +109,7 @@ class AudioRecordMgr private constructor(){
     fun release() {
         exector.shutdown()
         encodeMgr.release()
-        audioRecord!!.release()
+        audioRecord?.release()
         audioRecord = null
     }
 
