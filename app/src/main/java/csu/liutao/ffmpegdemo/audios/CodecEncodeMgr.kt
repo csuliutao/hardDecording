@@ -1,12 +1,11 @@
-package csu.liutao.ffmpegdemo
+package csu.liutao.ffmpegdemo.audios
 
 import android.media.MediaCodec
 import android.media.MediaFormat
 import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
-import csu.liutao.ffmpegdemo.audios.AudioMgr
-import java.nio.ByteBuffer
+import csu.liutao.ffmpegdemo.Utils
 import java.util.concurrent.ArrayBlockingQueue
 
 class CodecEncodeMgr private constructor(){
@@ -14,7 +13,7 @@ class CodecEncodeMgr private constructor(){
     private lateinit var codec : MediaCodec
     private lateinit var queue : ArrayBlockingQueue<Input>
 
-    private lateinit var listener : OutputListener
+    private lateinit var listener : CodecOutputListener
 
     private val subThread = HandlerThread("CodecEncodeMgr")
     private lateinit var subHandler : Handler
@@ -76,10 +75,6 @@ class CodecEncodeMgr private constructor(){
         subThread.quitSafely()
     }
 
-    interface OutputListener {
-        fun output(bytes : ByteArray)
-    }
-
     data class Input(var bytes: ByteArray,var offset: Int,var size: Int)
 
     class Builder {
@@ -94,7 +89,7 @@ class CodecEncodeMgr private constructor(){
             return this
         }
 
-        fun outputLstener(listener : OutputListener) : Builder{
+        fun outputLstener(listener : CodecOutputListener) : Builder {
             mgr.listener = listener
             return this
         }

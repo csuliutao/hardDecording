@@ -2,7 +2,6 @@ package csu.liutao.ffmpegdemo.audios
 
 import android.media.AudioRecord
 import android.media.MediaFormat
-import csu.liutao.ffmpegdemo.CodecEncodeMgr
 import csu.liutao.ffmpegdemo.Utils
 import java.io.FileOutputStream
 
@@ -69,15 +68,18 @@ class AudioRecordMgr private constructor(){
     }
 
     class RecordThread() : Thread() {
-        private lateinit var encoderMgr :CodecEncodeMgr
+        private lateinit var encoderMgr : CodecEncodeMgr
         private val headerByte = ByteArray(7)
 
-        private val listener = object : CodecEncodeMgr.OutputListener{
+        private val listener = object : CodecOutputListener {
             override fun output(bytes: ByteArray) {
                 AudioMgr.mgr.addADTStoPacket(headerByte, 7 + bytes.size)
                 AudioRecordMgr.instance.fos?.write(headerByte)
                 AudioRecordMgr.instance.fos?.write(bytes)
-                if (!AudioRecordMgr.instance.isRecording) AudioRecordMgr.instance.fos?.close()
+                if (!AudioRecordMgr.instance.isRecording) {
+                    AudioRecordMgr.instance.fos?.close()
+                    AudioRecordMgr.instance.fos = null
+                }
             }
         }
 
