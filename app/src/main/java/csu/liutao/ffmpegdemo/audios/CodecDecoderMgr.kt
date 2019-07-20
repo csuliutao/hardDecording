@@ -20,7 +20,10 @@ class CodecDecoderMgr private constructor(){
 
     private val callback = object : MediaCodec.Callback() {
         override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
-            if (isStop) return
+            if (isStop) {
+                release()
+                return
+            }
             val outBuffer = mediaCodec.getOutputBuffer(index)
             val bytes = ByteArray(info.size)
             outBuffer.get(bytes, info.offset, info.size)
