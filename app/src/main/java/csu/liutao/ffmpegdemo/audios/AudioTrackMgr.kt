@@ -6,10 +6,10 @@ import java.io.File
 class AudioTrackMgr private constructor(){
     private lateinit var curFile : File
     private var minBuffer: Int = 0
-    private var decoderMgr: CodecDecoderMgr? = null
+    private var decoder: AudioDecoder? = null
     private var audioTrack : AudioTrack? = null
 
-    lateinit var pauseListener : CodecDecoderMgr.FinishListener
+    lateinit var pauseListener : AudioDecoder.FinishListener
 
     init {
         minBuffer = AudioTrack.getMinBufferSize(AudioMgr.SAMPLE_RATE, AudioMgr.CHANNEL_CONFIG, AudioMgr.AUDIO_FORMAT)
@@ -31,12 +31,12 @@ class AudioTrackMgr private constructor(){
     }
 
     fun pause(){
-        decoderMgr?.stop()
+        decoder?.stop()
         audioTrack?.pause()
     }
 
     fun replay(){
-        decoderMgr = CodecDecoderMgr.Builder()
+        decoder = AudioDecoder.Builder()
             .file(curFile.canonicalPath)
             .outputListener(listener)
             .finishListener(pauseListener)
@@ -45,7 +45,7 @@ class AudioTrackMgr private constructor(){
     }
 
     fun release(){
-        CodecDecoderMgr.release()
+        AudioDecoder.release()
         audioTrack?.release()
         audioTrack = null
     }

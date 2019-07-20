@@ -9,8 +9,8 @@ import android.os.HandlerThread
 import csu.liutao.ffmpegdemo.Utils
 
 // 解码音频的
-class CodecDecoderMgr private constructor(){
-    private val tag = "CodecDecoderMgr"
+class AudioDecoder private constructor(){
+    private val tag = "AudioDecoder"
     private val extractor = MediaExtractor()
     private lateinit var mediaCodec : MediaCodec
     private val audio = "audio"
@@ -91,7 +91,7 @@ class CodecDecoderMgr private constructor(){
     }
 
     companion object {
-        private val subThread = HandlerThread("CodecDecoderMgr")
+        private val subThread = HandlerThread("AudioDecoder")
         private lateinit var subHandler: Handler
 
         init {
@@ -105,7 +105,7 @@ class CodecDecoderMgr private constructor(){
     }
 
     class Builder {
-        private val mgr = CodecDecoderMgr()
+        private val mgr = AudioDecoder()
 
         fun file(file: String) : Builder {
             mgr.extractor.setDataSource(file)
@@ -122,7 +122,7 @@ class CodecDecoderMgr private constructor(){
             return this
         }
 
-        fun build() : CodecDecoderMgr{
+        fun build() : AudioDecoder{
             mgr.init()
             return mgr
         }

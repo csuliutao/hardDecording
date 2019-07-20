@@ -8,16 +8,16 @@ import android.os.HandlerThread
 import csu.liutao.ffmpegdemo.Utils
 import java.util.concurrent.ArrayBlockingQueue
 
-class CodecEncodeMgr private constructor(){
+class AudioEncoder private constructor(){
     private var format = AudioMgr.mgr.getAudioBaseFormat()
     private lateinit var mediaCodec : MediaCodec
     private lateinit var queue : ArrayBlockingQueue<Input>
 
     private lateinit var listener : CodecOutputListener
 
-    private val tag = "CodecEncodeMgr"
+    private val tag = "AudioEncoder"
 
-    private val subThread = HandlerThread("CodecEncodeMgr")
+    private val subThread = HandlerThread("AudioEncoder")
     private lateinit var subHandler : Handler
 
     private val callback = object : MediaCodec.Callback() {
@@ -79,7 +79,7 @@ class CodecEncodeMgr private constructor(){
     data class Input(var bytes: ByteArray,var offset: Int,var size: Int)
 
     class Builder {
-        private val mgr = CodecEncodeMgr()
+        private val mgr = AudioEncoder()
         fun mediaFormat(format: MediaFormat) : Builder {
             mgr.format = format
             return this
@@ -95,7 +95,7 @@ class CodecEncodeMgr private constructor(){
             return this
         }
 
-        fun build() : CodecEncodeMgr {
+        fun build() : AudioEncoder {
             val type = mgr.format.getString(MediaFormat.KEY_MIME)
             mgr.mediaCodec = MediaCodec.createEncoderByType(type)
             mgr.start()

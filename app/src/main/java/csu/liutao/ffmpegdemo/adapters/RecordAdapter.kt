@@ -1,7 +1,6 @@
 package csu.liutao.ffmpegdemo.adapters
 
 import android.app.Activity
-import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,10 +10,10 @@ import androidx.recyclerview.widget.RecyclerView
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.audios.AudioTrackMgr
 import csu.liutao.ffmpegdemo.audios.AudioMgr
-import csu.liutao.ffmpegdemo.audios.CodecDecoderMgr
+import csu.liutao.ffmpegdemo.audios.AudioDecoder
 import java.io.File
 
-class RecordAdapter(var context: Activity): RecyclerView.Adapter<RecordAdapter.ViewHolder>(), CodecDecoderMgr.FinishListener {
+class RecordAdapter(var context: Activity): RecyclerView.Adapter<RecordAdapter.ViewHolder>(), AudioDecoder.FinishListener {
     private val files = ArrayList<File>()
     private lateinit var inflater : LayoutInflater
 

@@ -36,7 +36,7 @@ class AudioRecordMgr private constructor(){
 
     private lateinit var fos : FileOutputStream
 
-    private lateinit var encodeMgr : CodecEncodeMgr
+    private lateinit var encodeMgr : AudioEncoder
 
     private var headerByte = ByteArray(7)
 
@@ -58,7 +58,7 @@ class AudioRecordMgr private constructor(){
 
         val format = AudioMgr.mgr.getAudioBaseFormat()
         format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, bufferSize)
-        encodeMgr = CodecEncodeMgr.Builder()
+        encodeMgr = AudioEncoder.Builder()
             .mediaFormat(format)
             .outputLstener(listener)
             .queueSize()
