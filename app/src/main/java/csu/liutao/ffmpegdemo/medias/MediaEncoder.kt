@@ -1,4 +1,4 @@
-package csu.liutao.ffmpegdemo.audios
+package csu.liutao.ffmpegdemo.medias
 
 import android.media.MediaCodec
 import android.media.MediaFormat
@@ -6,18 +6,20 @@ import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import csu.liutao.ffmpegdemo.Utils
+import csu.liutao.ffmpegdemo.audios.AudioMgr
+import csu.liutao.ffmpegdemo.audios.CodecOutputListener
 import java.util.concurrent.ArrayBlockingQueue
 
-class AudioEncoder private constructor(){
+open class MediaEncoder private constructor(){
     private var format = AudioMgr.mgr.getAudioBaseFormat()
     private lateinit var mediaCodec : MediaCodec
     private lateinit var queue : ArrayBlockingQueue<Input>
 
     private lateinit var listener : CodecOutputListener
 
-    private val tag = "AudioEncoder"
+    private val tag = "MediaEncoder"
 
-    private val subThread = HandlerThread("AudioEncoder")
+    private val subThread = HandlerThread("MediaEncoder")
     private lateinit var subHandler : Handler
 
     private val callback = object : MediaCodec.Callback() {
@@ -58,6 +60,8 @@ class AudioEncoder private constructor(){
     }
 
     private fun start() {
+        val type = format.getString(MediaFormat.KEY_MIME)
+        mediaCodec = MediaCodec.createEncoderByType(type)
         mediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             mediaCodec.setCallback(callback, subHandler)
@@ -79,7 +83,7 @@ class AudioEncoder private constructor(){
     data class Input(var bytes: ByteArray,var offset: Int,var size: Int)
 
     class Builder {
-        private val mgr = AudioEncoder()
+        private val mgr = MediaEncoder()
         fun mediaFormat(format: MediaFormat) : Builder {
             mgr.format = format
             return this
@@ -95,9 +99,7 @@ class AudioEncoder private constructor(){
             return this
         }
 
-        fun build() : AudioEncoder {
-            val type = mgr.format.getString(MediaFormat.KEY_MIME)
-            mgr.mediaCodec = MediaCodec.createEncoderByType(type)
+        fun build() : MediaEncoder {
             mgr.start()
             return mgr
         }
