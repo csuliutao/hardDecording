@@ -79,7 +79,7 @@ class CodecDecoderMgr private constructor(){
     }
 
     private fun release() {
-        mediaCodec?.release()
+        mediaCodec.release()
         extractor.release()
     }
 

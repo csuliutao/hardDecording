@@ -34,7 +34,7 @@ class AudioRecordMgr private constructor(){
 
     lateinit var callback : OnRecordSucess
 
-    private var fos : FileOutputStream? = null
+    private lateinit var fos : FileOutputStream
 
     private lateinit var encodeMgr : CodecEncodeMgr
 
@@ -43,14 +43,13 @@ class AudioRecordMgr private constructor(){
     private val listener = object : CodecOutputListener {
         override fun output(bytes: ByteArray) {
             if (!isRecording) {
-                fos?.close()
-                fos = null
+                fos.close()
                 encodeMgr.resetQueue()
                 return
             }
             AudioMgr.mgr.addADTStoPacket(headerByte, 7 + bytes.size)
-            fos?.write(headerByte)
-            fos?.write(bytes)
+            fos.write(headerByte)
+            fos.write(bytes)
         }
     }
 
