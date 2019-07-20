@@ -35,7 +35,7 @@ class MediaMgr private constructor(){
 
     fun getH264CodecFromat(width : Int, height: Int) : MediaFormat {
         val format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height)
-        format.setInteger(MediaFormat.KEY_BIT_RATE,width * height)
+        format.setInteger(MediaFormat.KEY_BIT_RATE,width * height * 3)
         format.setInteger(MediaFormat.KEY_FRAME_RATE, KEY_FRAME_RATE)
         format.setInteger(MediaFormat.KEY_COLOR_FORMAT, KEY_COLOR_FORMAT)
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, KEY_I_FRAME_INTERVAL)

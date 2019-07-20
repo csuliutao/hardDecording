@@ -83,20 +83,20 @@ class MediaPlayActivity : AppCompatActivity() {
             mSurface = Surface(textureView.surfaceTexture)
             decoder.configure(format, mSurface, null, 0)
 
-//            decoder.setOutputSurface(mSurface)
+            decoder.setOutputSurface(mSurface)
             decoder.setCallback(object : MediaCodec.Callback() {
                 override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
-                    Utils.log("oindex ="+index)
-                    decoder.releaseOutputBuffer(index, 0)
+                    Utils.log("oindex ="+index +", size =" + info.size)
+                    decoder.releaseOutputBuffer(index, true)
                 }
 
                 override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
                     Utils.log("onInputBufferAvailable index ="+index)
                     if (!played) return
-                    Utils.log("index ="+index)
                     val inBuffer = decoder.getInputBuffer(index)
                     inBuffer.clear()
                     val sampleSize = extractor.readSampleData(inBuffer, 0)
+                    Utils.log("sampleSize ="+sampleSize)
                     if (sampleSize > 0) {
                         extractor.advance()
                         decoder.queueInputBuffer(index, 0, sampleSize, 0, 0)
@@ -114,6 +114,32 @@ class MediaPlayActivity : AppCompatActivity() {
                 }
             }, subHandler)
             decoder.start()
+
+//            startDecoder()
+        }
+    }
+
+    private fun startDecoder() {
+        var iindex = -1
+        var oindex = 0
+        var sampleSize = -1
+        var info = MediaCodec.BufferInfo()
+        while (played) {
+            iindex = decoder.dequeueInputBuffer(-1)
+            if (iindex > -1) {
+                val inBuffer = decoder.getInputBuffer(iindex)
+                inBuffer.clear()
+
+                sampleSize = extractor.readSampleData(inBuffer, 0)
+                if (sampleSize <= 0) break
+                decoder.queueInputBuffer(iindex, 0, sampleSize, 0, 0)
+                extractor.advance()
+            }
+            oindex = decoder.dequeueOutputBuffer(info, -1)
+            while (oindex > -1) {
+                decoder.releaseOutputBuffer(oindex, true)
+                oindex = decoder.dequeueOutputBuffer(info, -1)
+            }
         }
     }
 

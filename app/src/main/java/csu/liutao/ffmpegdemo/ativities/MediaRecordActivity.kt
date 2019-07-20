@@ -181,18 +181,19 @@ class MediaRecordActivity : AppCompatActivity (){
         }
 
         var info = MediaCodec.BufferInfo()
-        var oindex = h264Encode!!.dequeueOutputBuffer(info, 0)
+        var oindex = h264Encode!!.dequeueOutputBuffer(info, -1)
         while (oindex > -1) {
             val outBuffer = h264Encode!!.getOutputBuffer(oindex)
             outBuffer.position(info.offset)
             outBuffer.limit(info.offset + info.size)
 
+            Utils.log("write size ="+ info.size)
             val dstByte = ByteArray(info.size)
             outBuffer.get(dstByte)
             fos!!.write(dstByte)
 
             h264Encode!!.releaseOutputBuffer(oindex, 0)
-            oindex = h264Encode!!.dequeueOutputBuffer(info, 0)
+            oindex = h264Encode!!.dequeueOutputBuffer(info, -1)
         }
 
     }
