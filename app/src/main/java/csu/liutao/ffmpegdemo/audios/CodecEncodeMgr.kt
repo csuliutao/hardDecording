@@ -10,38 +10,31 @@ import java.util.concurrent.ArrayBlockingQueue
 
 class CodecEncodeMgr private constructor(){
     private var format = AudioMgr.mgr.getAudioBaseFormat()
-    private lateinit var codec : MediaCodec
+    private lateinit var mediaCodec : MediaCodec
     private lateinit var queue : ArrayBlockingQueue<Input>
 
     private lateinit var listener : CodecOutputListener
 
+    private val tag = "CodecEncodeMgr"
+
     private val subThread = HandlerThread("CodecEncodeMgr")
     private lateinit var subHandler : Handler
 
-    private val tag = "CodecEncodeMgr"
-
-    init {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            subThread.start()
-            subHandler = Handler(subThread.looper)
-        }
-    }
-
     private val callback = object : MediaCodec.Callback() {
         override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
-            val outBuffer = codec.getOutputBuffer(index)
+            val outBuffer = mediaCodec.getOutputBuffer(index)
             val bytes = ByteArray(info.size)
             outBuffer.get(bytes, info.offset, info.size)
             listener.output(bytes)
-            codec.releaseOutputBuffer(index, false)
+            mediaCodec.releaseOutputBuffer(index, false)
         }
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
-            val inBuffer = codec.getInputBuffer(index)
+            val inBuffer = mediaCodec.getInputBuffer(index)
             inBuffer.clear()
             val input = queue.take()
             inBuffer.put(input.bytes, input.offset, input.size)
-            codec.queueInputBuffer(index, 0, input.size, 0, 0)
+            mediaCodec.queueInputBuffer(index, 0, input.size, 0, 0)
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
@@ -53,6 +46,11 @@ class CodecEncodeMgr private constructor(){
         }
     }
 
+    init {
+        subThread.start()
+        subHandler = Handler(subThread.looper)
+    }
+
     fun offerInput(inputBytes : ByteArray, offset : Int, size : Int) {
         val bytes = inputBytes.clone()
         val input = Input(bytes, offset, size)
@@ -60,18 +58,21 @@ class CodecEncodeMgr private constructor(){
     }
 
     private fun start() {
-        codec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+        mediaCodec.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            codec.setCallback(callback, subHandler)
+            mediaCodec.setCallback(callback, subHandler)
         } else {
-            codec.setCallback(callback)
+            mediaCodec.setCallback(callback)
         }
-        codec.start()
+        mediaCodec.start()
     }
 
+    fun resetQueue() {
+        queue.clear()
+    }
 
-    fun release () {
-        codec.release()
+    fun release() {
+        mediaCodec.release()
         subThread.quitSafely()
     }
 
@@ -96,7 +97,7 @@ class CodecEncodeMgr private constructor(){
 
         fun build() : CodecEncodeMgr {
             val type = mgr.format.getString(MediaFormat.KEY_MIME)
-            mgr.codec = MediaCodec.createEncoderByType(type)
+            mgr.mediaCodec = MediaCodec.createEncoderByType(type)
             mgr.start()
             return mgr
         }

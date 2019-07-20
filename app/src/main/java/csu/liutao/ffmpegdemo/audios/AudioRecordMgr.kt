@@ -42,26 +42,20 @@ class AudioRecordMgr private constructor(){
 
     private val listener = object : CodecOutputListener {
         override fun output(bytes: ByteArray) {
-            if (fos == null) return
-            AudioMgr.mgr.addADTStoPacket(headerByte, 7 + bytes.size)
-            fos?.write(headerByte)
-            fos?.write(bytes)
             if (!isRecording) {
                 fos?.close()
                 fos = null
+                encodeMgr.resetQueue()
+                return
             }
+            AudioMgr.mgr.addADTStoPacket(headerByte, 7 + bytes.size)
+            fos?.write(headerByte)
+            fos?.write(bytes)
         }
     }
 
     init {
         bufferSize = AudioRecord.getMinBufferSize(AudioMgr.SAMPLE_RATE, AudioMgr.CHANNEL_CONFIG, AudioMgr.AUDIO_FORMAT)
-        audioRecord = AudioRecord(
-            AudioMgr.AUDIO_SOURCE,
-            AudioMgr.SAMPLE_RATE,
-            AudioMgr.CHANNEL_CONFIG,
-            AudioMgr.AUDIO_FORMAT,
-            bufferSize
-        )
 
         val format = AudioMgr.mgr.getAudioBaseFormat()
         format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, bufferSize)
@@ -75,6 +69,15 @@ class AudioRecordMgr private constructor(){
 
 
     fun paly() {
+        if (audioRecord == null) {
+            audioRecord = AudioRecord(
+                AudioMgr.AUDIO_SOURCE,
+                AudioMgr.SAMPLE_RATE,
+                AudioMgr.CHANNEL_CONFIG,
+                AudioMgr.AUDIO_FORMAT,
+                bufferSize)
+        }
+
         curState = RecordState.PLAY
         if (!isRecording) {
             isRecording = true
@@ -91,7 +94,7 @@ class AudioRecordMgr private constructor(){
         val byte = ByteArray(bufferSize)
         while(isRecording) {
             val lenth = audioRecord!!.read(byte, 0, bufferSize)
-            if (lenth != AudioRecord.ERROR_BAD_VALUE) {
+            if (lenth > 0) {
                 encodeMgr.offerInput(byte, 0, lenth)
             }
         }
@@ -106,7 +109,8 @@ class AudioRecordMgr private constructor(){
 
     fun release() {
         exector.shutdown()
-        audioRecord?.release()
+        encodeMgr.release()
+        audioRecord!!.release()
         audioRecord = null
     }
 

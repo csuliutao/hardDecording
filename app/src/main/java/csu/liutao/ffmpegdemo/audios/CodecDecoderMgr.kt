@@ -12,24 +12,25 @@ import csu.liutao.ffmpegdemo.Utils
 class CodecDecoderMgr private constructor(){
     private val tag = "CodecDecoderMgr"
     private val extractor = MediaExtractor()
-    private lateinit var codec : MediaCodec
+    private lateinit var mediaCodec : MediaCodec
     private val audio = "audio"
-    private val subThread = HandlerThread("CodecDecoderMgr")
-    private lateinit var subHandler: Handler
     private lateinit var outputListener: CodecOutputListener
     private lateinit var finishListener: FinishListener
+    private var isStop = false
 
     private val callback = object : MediaCodec.Callback() {
         override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
-            val outBuffer = codec.getOutputBuffer(index)
+            if (isStop) return
+            val outBuffer = mediaCodec.getOutputBuffer(index)
             val bytes = ByteArray(info.size)
             outBuffer.get(bytes, info.offset, info.size)
             outputListener.output(bytes)
-            codec.releaseOutputBuffer(index, false)
+            mediaCodec.releaseOutputBuffer(index, false)
         }
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
-            val inBuffer = codec.getInputBuffer(index)
+            if (isStop) return
+            val inBuffer = mediaCodec.getInputBuffer(index)
             inBuffer.clear()
             val sampleSize = extractor.readSampleData(inBuffer, 0)
             if (sampleSize < 0) {
@@ -38,7 +39,7 @@ class CodecDecoderMgr private constructor(){
             }
 
             extractor.advance()
-            codec.queueInputBuffer(index, 0, sampleSize, 0, 0)
+            mediaCodec.queueInputBuffer(index, 0, sampleSize, 0, 0)
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
@@ -50,11 +51,6 @@ class CodecDecoderMgr private constructor(){
         }
     }
 
-    init {
-        subThread.start()
-        subHandler = Handler(subThread.looper)
-    }
-
 
     private fun init() {
         val num = extractor.trackCount
@@ -64,28 +60,45 @@ class CodecDecoderMgr private constructor(){
             val type = format.getString(MediaFormat.KEY_MIME)
             if (type.startsWith(audio)) {
                 extractor.selectTrack(i)
-                codec = MediaCodec.createDecoderByType(type)
-                codec.configure(format, null, null, 0)
+                mediaCodec = MediaCodec.createDecoderByType(type)
+                mediaCodec.configure(format, null, null, 0)
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-                    codec.setCallback(callback, subHandler)
+                    mediaCodec.setCallback(callback, subHandler)
                 } else {
-                    codec.setCallback(callback)
+                    mediaCodec.setCallback(callback)
                 }
-                codec.start()
+                mediaCodec.start()
                 break
             }
             i++
         }
     }
 
-    fun release() {
+    fun stop() {
+        isStop = true
+    }
+
+    private fun release() {
+        mediaCodec?.release()
         extractor.release()
-        codec.release()
-        subThread.quitSafely()
     }
 
     interface FinishListener {
         fun onFinished()
+    }
+
+    companion object {
+        private val subThread = HandlerThread("CodecDecoderMgr")
+        private lateinit var subHandler: Handler
+
+        init {
+            subThread.start()
+            subHandler = Handler(subThread.looper)
+        }
+
+        fun release() {
+            subThread.quitSafely()
+        }
     }
 
     class Builder {
