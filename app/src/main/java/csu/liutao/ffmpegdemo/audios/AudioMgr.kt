@@ -3,6 +3,7 @@ package csu.liutao.ffmpegdemo.audios
 import android.content.Context
 import android.media.AudioFormat
 import android.media.MediaCodecInfo
+import android.media.MediaFormat
 import android.media.MediaRecorder
 import android.util.Log
 import java.io.File
@@ -51,6 +52,13 @@ class AudioMgr private constructor(){
         packet[4] = (packetLen and 0x7FF shr 3).toByte()
         packet[5] = ((packetLen and 7 shl 5) + 0x1F).toByte()
         packet[6] = 0xFC.toByte()
+    }
+
+    fun getAudioBaseFormat() : MediaFormat{
+        val format =  MediaFormat.createAudioFormat(MediaFormat.MIMETYPE_AUDIO_AAC, AudioMgr.SAMPLE_RATE, AudioMgr.CHANNEL_COUNT)
+        format.setInteger(MediaFormat.KEY_AAC_PROFILE, AudioMgr.KEY_AAC_PROFILE)
+        format.setInteger(MediaFormat.KEY_BIT_RATE, 64000)
+        return format
     }
 
 

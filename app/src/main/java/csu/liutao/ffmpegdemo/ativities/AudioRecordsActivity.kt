@@ -53,6 +53,7 @@ class AudioRecordsActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        AudioRecordMgr.instance.release()
         AudioTrackMgr.instance.release()
     }
 }
