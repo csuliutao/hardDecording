@@ -4,9 +4,18 @@ import android.media.AudioRecord
 import android.media.MediaFormat
 import csu.liutao.ffmpegdemo.Utils
 import java.io.FileOutputStream
+import java.util.concurrent.Executors
 
 class AudioRecordMgr private constructor(){
     var curState = RecordState.RELEASE
+
+    private val exector = Executors.newSingleThreadExecutor()
+
+    private val runnable = object : Runnable{
+        override fun run() {
+            AudioRecordMgr.instance.startRecord()
+        }
+    }
 
     private var isRecording = false
         set(value) {
@@ -27,84 +36,78 @@ class AudioRecordMgr private constructor(){
 
     private var fos : FileOutputStream? = null
 
-    init {
-        bufferSize = AudioRecord.getMinBufferSize(AudioMgr.SAMPLE_RATE, AudioMgr.CHANNEL_CONFIG, AudioMgr.AUDIO_FORMAT)
+    private lateinit var encodeMgr : CodecEncodeMgr
+
+    private var headerByte = ByteArray(7)
+
+    private val listener = object : CodecOutputListener {
+        override fun output(bytes: ByteArray) {
+            if (fos == null) return
+            AudioMgr.mgr.addADTStoPacket(headerByte, 7 + bytes.size)
+            fos?.write(headerByte)
+            fos?.write(bytes)
+            if (!isRecording) {
+                fos?.close()
+                fos = null
+            }
+        }
     }
 
-    private fun prepare() {
-        if (audioRecord == null) {
-            audioRecord = AudioRecord(
-                AudioMgr.AUDIO_SOURCE,
-                AudioMgr.SAMPLE_RATE,
-                AudioMgr.CHANNEL_CONFIG,
-                AudioMgr.AUDIO_FORMAT,
-                bufferSize
-            )
-        }
+    init {
+        bufferSize = AudioRecord.getMinBufferSize(AudioMgr.SAMPLE_RATE, AudioMgr.CHANNEL_CONFIG, AudioMgr.AUDIO_FORMAT)
+        audioRecord = AudioRecord(
+            AudioMgr.AUDIO_SOURCE,
+            AudioMgr.SAMPLE_RATE,
+            AudioMgr.CHANNEL_CONFIG,
+            AudioMgr.AUDIO_FORMAT,
+            bufferSize
+        )
+
+        val format = AudioMgr.mgr.getAudioBaseFormat()
+        format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, bufferSize)
+        encodeMgr = CodecEncodeMgr.Builder()
+            .mediaFormat(format)
+            .outputLstener(listener)
+            .queueSize()
+            .build()
+
     }
 
 
     fun paly() {
-        prepare()
         curState = RecordState.PLAY
         if (!isRecording) {
             isRecording = true
             audioRecord!!.startRecording()
             val file = Utils.getNewFile(AudioMgr.mgr.getRecordDir(), AudioMgr.END_TAG)
+
             fos = FileOutputStream(file)
-            RecordThread().start()
+
+            exector.submit(runnable)
+        }
+    }
+
+    private fun startRecord() {
+        val byte = ByteArray(bufferSize)
+        while(isRecording) {
+            val lenth = audioRecord!!.read(byte, 0, bufferSize)
+            if (lenth != AudioRecord.ERROR_BAD_VALUE) {
+                encodeMgr.offerInput(byte, 0, lenth)
+            }
         }
     }
 
     fun pause() {
         curState = RecordState.PAUSE
         isRecording = false
+        audioRecord!!.stop()
         AudioRecordMgr.instance.callback.onSucess()
     }
 
     fun release() {
+        exector.shutdown()
         audioRecord?.release()
         audioRecord = null
-    }
-
-    class RecordThread() : Thread() {
-        private lateinit var encoderMgr : CodecEncodeMgr
-        private val headerByte = ByteArray(7)
-
-        private val listener = object : CodecOutputListener {
-            override fun output(bytes: ByteArray) {
-                AudioMgr.mgr.addADTStoPacket(headerByte, 7 + bytes.size)
-                AudioRecordMgr.instance.fos?.write(headerByte)
-                AudioRecordMgr.instance.fos?.write(bytes)
-                if (!AudioRecordMgr.instance.isRecording) {
-                    AudioRecordMgr.instance.fos?.close()
-                    AudioRecordMgr.instance.fos = null
-                }
-            }
-        }
-
-        init {
-            val format = AudioMgr.mgr.getAudioBaseFormat()
-            format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, AudioRecordMgr.instance.bufferSize)
-            encoderMgr = CodecEncodeMgr.Builder()
-                .mediaFormat(format)
-                .outputLstener(listener)
-                .queueSize()
-                .build()
-        }
-
-
-        override fun run() {
-            super.run()
-            val size = AudioRecordMgr.instance.bufferSize
-            val byte = ByteArray(size)
-            while(AudioRecordMgr.instance.isRecording) {
-                val lenth = AudioRecordMgr.instance.audioRecord!!.read(byte, 0, size)
-                if (lenth != AudioRecord.ERROR_BAD_VALUE) {
-                    encoderMgr.offerInput(byte, 0, lenth)
-                }
-            }
-        }
     }
 
     interface OnRecordSucess {

@@ -51,8 +51,8 @@ class AudioTrackMgr private constructor(){
 
     fun pause(){
         isPaused = true
-        audioTrack!!.pause()
         decoderMgr.release()
+        audioTrack!!.pause()
     }
 
     fun replay(){

@@ -79,8 +79,8 @@ class CodecDecoderMgr private constructor(){
     }
 
     fun release() {
-        codec.release()
         extractor.release()
+        codec.release()
         subThread.quitSafely()
     }
 
