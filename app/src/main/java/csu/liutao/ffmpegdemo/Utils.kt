@@ -27,6 +27,10 @@ class Utils private constructor(){
             Log.e(TAG, str)
         }
 
+        fun log(tag:String,str : String) : Unit {
+            Log.e(TAG, tag +"_"+str)
+        }
+
         fun getNewFile(dir:String, endTag:String, format:String = TIME_FORMAT) : File {
             val formater = SimpleDateFormat(format)
             val date = Calendar.getInstance()
