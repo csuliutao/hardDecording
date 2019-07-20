@@ -19,6 +19,7 @@ class VideoDecoder private constructor(){
 
     private val callback = object : MediaCodec.Callback() {
         override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
+            Utils.log(tag, "out size =" + info.size)
             mediaCodec.releaseOutputBuffer(index, false)
         }
 

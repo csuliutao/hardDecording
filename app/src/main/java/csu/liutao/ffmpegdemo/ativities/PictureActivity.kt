@@ -1,16 +1,9 @@
 package csu.liutao.ffmpegdemo.ativities
 
-import android.Manifest
-import android.annotation.SuppressLint
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.ImageFormat
-import android.hardware.camera2.*
 import android.media.Image
-import android.media.ImageReader
 import android.os.*
-import android.view.Surface
 import android.view.SurfaceHolder
 import android.view.SurfaceView
 import android.widget.Button
@@ -20,8 +13,6 @@ import csu.liutao.ffmpegdemo.PictureMgr
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.medias.Camera2Mgr
-import java.io.ByteArrayInputStream
-import java.io.ByteArrayOutputStream
 import java.io.FileOutputStream
 
 @RequiresApi(Build.VERSION_CODES.LOLLIPOP)
@@ -62,12 +53,8 @@ class PictureActivity :AppCompatActivity() {
         })
 
         capture.setOnClickListener{
-            takePicture()
+            cameraMgr.take()
         }
-    }
-
-    private fun takePicture() {
-        cameraMgr.take()
     }
 
     private fun savePicAndShow(image : Image) {

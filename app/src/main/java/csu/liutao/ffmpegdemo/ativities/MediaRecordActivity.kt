@@ -1,33 +1,22 @@
 package csu.liutao.ffmpegdemo.ativities
 
-import android.annotation.SuppressLint
-import android.content.Context
 import android.content.pm.PackageManager
-import android.graphics.ImageFormat
-import android.graphics.PixelFormat
 import android.graphics.SurfaceTexture
-import android.hardware.camera2.*
 import android.media.Image
-import android.media.ImageReader
-import android.media.MediaCodec
-import android.media.MediaFormat
-import android.os.Build
 import android.os.Bundle
-import android.os.Handler
-import android.os.HandlerThread
 import android.view.Surface
 import android.view.TextureView
 import android.widget.ImageButton
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.Utils
+import csu.liutao.ffmpegdemo.audios.CodecOutputListener
+import csu.liutao.ffmpegdemo.medias.Camera2Mgr
+import csu.liutao.ffmpegdemo.medias.MediaEncoder
 import csu.liutao.ffmpegdemo.medias.MediaMgr
 import java.io.File
 import java.io.FileOutputStream
-import java.lang.Math.min
 
-@RequiresApi(Build.VERSION_CODES.LOLLIPOP)
 class MediaRecordActivity : AppCompatActivity (){
     private lateinit var curFile : File
 
@@ -38,23 +27,25 @@ class MediaRecordActivity : AppCompatActivity (){
     private lateinit var textureView : TextureView
     private lateinit var button : ImageButton
 
-    private lateinit var mSurface : Surface
+    private lateinit var camera2Mgr: Camera2Mgr
 
-    private lateinit var cameraMgr: CameraManager
+    private var videoEncoder : MediaEncoder? = null
 
-    private var cameraDevice : CameraDevice? = null
+    private val imageListener = object : Camera2Mgr.ImageListener {
+        override fun handleImage(image: Image) {
+            val bytes = writeYUVImagToFile(image)
+            videoEncoder?.offerInput(bytes, 0, bytes.size)
+        }
+    }
 
-    private var cameraSession :CameraCaptureSession? = null
+    private val outputListener = object : CodecOutputListener {
+        override fun output(bytes: ByteArray) {
+            if (fos != null) {
+                fos!!.write(bytes)
+            }
+        }
+    }
 
-    private var h264Encode : MediaCodec? = null
-
-    private val mainHandler = Handler()
-
-    private val subThread = HandlerThread("MediaRecordActivity")
-
-    private lateinit var subHandler : Handler
-
-    private lateinit var imageReader : ImageReader
 
     private val surfaceTextureListener = object : TextureView.SurfaceTextureListener {
         override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture?, width: Int, height: Int) {
@@ -67,142 +58,36 @@ class MediaRecordActivity : AppCompatActivity (){
         }
 
         override fun onSurfaceTextureAvailable(surface: SurfaceTexture?, width: Int, height: Int) {
-            mSurface = Surface(surface)
-            if (Utils.checkCameraPermission(this@MediaRecordActivity)) initCamera()
-        }
-    }
-
-    private val callback = object : CameraDevice.StateCallback() {
-        override fun onOpened(camera: CameraDevice) {
-            cameraDevice = camera
-            initCameraSeesion()
-        }
-
-        override fun onDisconnected(camera: CameraDevice) {
-            cameraDevice?.close()
-            cameraDevice = null
-        }
-
-        override fun onError(camera: CameraDevice, error: Int) {
-            Utils.log("CameraDevice.StateCallback error")
-        }
-    }
-
-//    private lateinit var encodeCallback : EncodeCallback
-
-//    private lateinit var encodeSuface : Surface
-
-    private fun initCameraSeesion() {
-        initImageReader()
-        val list = ArrayList<Surface>()
-        list.add(mSurface)
-        list.add(imageReader.surface)
-
-        cameraDevice!!.createCaptureSession(list, object : CameraCaptureSession.StateCallback(){
-            override fun onConfigureFailed(session: CameraCaptureSession) {
-                Utils.log("createCaptureSession failed")
+            camera2Mgr = Camera2Mgr.Builder()
+                .surface(Surface(surface), false)
+                .imageReader(textureView.width, textureView.height, imageListener)
+                .build()
+            if (Utils.checkCameraPermission(this@MediaRecordActivity)) {
+                camera2Mgr.openCamera(this@MediaRecordActivity)
             }
-
-            override fun onConfigured(session: CameraCaptureSession) {
-                cameraSession = session
-                startPreview()
-            }
-        } ,subHandler)
+        }
     }
 
-    private fun startPreview() {
-        val requet = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_RECORD)
-        requet.addTarget(mSurface)
-        requet.addTarget(imageReader.surface)
-        cameraSession!!.setRepeatingRequest(requet.build(),null , subHandler)
-    }
-
-    fun initEncode() {
-        val format = MediaMgr.instance.getH264CodecFromat(textureView.width, textureView.height)
-        h264Encode = MediaCodec.createEncoderByType(MediaFormat.MIMETYPE_VIDEO_AVC)
-        h264Encode!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
-        /*encodeSuface = h264Encode.createInputSurface()
-        encodeCallback = EncodeCallback()
-        h264Encode.setCallback(encodeCallback)*/
-        h264Encode!!.start()
-    }
-
-    private fun initImageReader() {
-        Utils.log("width =" + textureView.width + ", h = "+ textureView.height)
-        imageReader = ImageReader.newInstance(textureView.width, textureView.height, ImageFormat.YUV_420_888, 2)
-        imageReader.setOnImageAvailableListener(object : ImageReader.OnImageAvailableListener {
-            override fun onImageAvailable(reader: ImageReader?) {
-                if (reader == null) return
-                val image = reader!!.acquireNextImage()
-                if (isStarted) {
-                    writeYUVImagToFile(image)
-                }
-                image.close()
-            }
-        }, subHandler)
-    }
-
-    private fun writeYUVImagToFile(image: Image) {
+    private fun writeYUVImagToFile(image: Image) : ByteArray {
         val plants = image.planes
         val size = plants.size
         if (size != 3) throw Exception("image data is wrong")
         val yBuffer = plants[0].buffer
         val ySize = yBuffer.remaining()
-      /*  val uBuffer = plants[1].buffer
-        val uSize = uBuffer.remaining()*/
         val vBuffer = plants[2].buffer
         val vSize = vBuffer.remaining()
 
-        val allSize = ySize /*+ uSize*/ + vSize
+        val allSize = ySize  + vSize
         val srcByte = ByteArray(allSize)
 
-        Utils.log("y ="+ ySize+",v="+vSize/*+"u="+uSize*/)
+        Utils.log("y ="+ ySize+",v="+vSize)
         //nV21
         yBuffer.get(srcByte, 0, ySize)
-//        uBuffer.get(srcByte, ySize, uSize)
-        vBuffer.get(srcByte, ySize /*+ uSize*/, vSize)
-
-        /*var curSize = 0
-        while (curSize < allSize) {
-            val size = min(MediaMgr.MAX_INPUT_SIZE, allSize - curSize)
-            encodeToFile(srcByte, curSize, size)
-            curSize += MediaMgr.MAX_INPUT_SIZE
-        }*/
-        encodeToFile(srcByte, 0, allSize)
+        vBuffer.get(srcByte, ySize , vSize)
+        return srcByte
     }
 
-    private fun encodeToFile(srcByte: ByteArray, offset: Int, size: Int) {
-        val iindex = h264Encode!!.dequeueInputBuffer(-1)
-        if(iindex > -1) {
-            val inBuffer = h264Encode!!.getInputBuffer(iindex)
-            inBuffer.clear()
-            inBuffer.put(srcByte, offset, size)
-            h264Encode!!.queueInputBuffer(iindex, 0, size, 0, 0)
-        }
 
-        var info = MediaCodec.BufferInfo()
-        var oindex = h264Encode!!.dequeueOutputBuffer(info, -1)
-        while (oindex > -1) {
-            val outBuffer = h264Encode!!.getOutputBuffer(oindex)
-            outBuffer.position(info.offset)
-            outBuffer.limit(info.offset + info.size)
-
-            Utils.log("write size ="+ info.size)
-            val dstByte = ByteArray(info.size)
-            outBuffer.get(dstByte)
-            fos!!.write(dstByte)
-
-            h264Encode!!.releaseOutputBuffer(oindex, 0)
-            oindex = h264Encode!!.dequeueOutputBuffer(info, -1)
-        }
-
-    }
-
-    @SuppressLint("MissingPermission")
-    private fun initCamera() {
-        cameraMgr = getSystemService(Context.CAMERA_SERVICE) as CameraManager
-        cameraMgr.openCamera(CameraCharacteristics.LENS_FACING_FRONT.toString(), callback, mainHandler)
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -210,27 +95,24 @@ class MediaRecordActivity : AppCompatActivity (){
         textureView = findViewById(R.id.preview)
         button = findViewById(R.id.take)
 
-        subThread.start()
-        subHandler = Handler(subThread.looper)
-
         textureView.surfaceTextureListener = surfaceTextureListener
         button.setOnClickListener{
             if (!isStarted) {
-                initEncode()
                 isStarted = true
                 curFile = MediaMgr.instance.getNewFile()
                 fos = FileOutputStream(curFile)
-//                encodeCallback.fos = FileOutputStream(curFile)
+                videoEncoder = MediaEncoder.Builder()
+                    .queueSize()
+                    .mediaFormat(MediaMgr.instance.getH264CodecFromat(textureView.width, textureView.height))
+                    .outputLstener(outputListener)
+                    .build()
+                camera2Mgr.take()
             } else {
                 isStarted = false
-                stopRecord()
+                camera2Mgr.stop()
+                finish()
             }
         }
-    }
-
-    private fun stopRecord() {
-//        encodeCallback.close()
-        finish()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -238,56 +120,16 @@ class MediaRecordActivity : AppCompatActivity (){
             if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
                 finish()
             } else {
-                initCamera()
+                camera2Mgr.openCamera(this)
             }
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
-
+        camera2Mgr.release()
+        videoEncoder?.release()
         fos?.close()
-        h264Encode?.release()
-        cameraSession!!.stopRepeating()
-
-        cameraSession?.close()
-        cameraSession = null
-
-        subThread.quitSafely()
+        fos = null
     }
-
-/*
-    class EncodeCallback : MediaCodec.Callback() {
-        lateinit var fos : FileOutputStream
-
-        fun close(){
-            fos.close()
-        }
-
-        override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
-            Utils.log("onInputBufferAvailable")
-        }
-
-        override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
-            if (fos == null) {
-                Utils.log("not start")
-                return
-            }
-            val outBuffer = codec.getOutputBuffer(index)
-            outBuffer.position(info.offset)
-            outBuffer.limit(info.offset + info.size)
-            val srcByte = ByteArray(info.size)
-            outBuffer.get(srcByte)
-            fos.write(srcByte)
-        }
-
-        override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
-            Utils.log("onOutputFormatChanged")
-        }
-
-        override fun onError(codec: MediaCodec, e: MediaCodec.CodecException) {
-            Utils.log("onError")
-        }
-    }
-*/
 }
