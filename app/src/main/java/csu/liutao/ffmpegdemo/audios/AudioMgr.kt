@@ -20,7 +20,7 @@ class AudioMgr private constructor(){
     fun initRecordDir(context : Context) {
         if (!isInitDir) {
             isInitDir = true
-            recordDir = context.filesDir.canonicalPath + File.separator + PATH
+            recordDir = context.externalCacheDir.canonicalPath + File.separator + PATH
             val file = File(recordDir)
             if (!file.exists()) {
                 val sucess = file.mkdirs()

@@ -12,7 +12,7 @@ class PictureMgr private constructor(){
 
 
     fun initDir(context : Context) {
-        picDir = context.filesDir.canonicalPath + File.separator + PATH
+        picDir = context.externalCacheDir.canonicalPath + File.separator + PATH
         val file = File(picDir)
         if (!file.exists()) file.mkdir()
     }
