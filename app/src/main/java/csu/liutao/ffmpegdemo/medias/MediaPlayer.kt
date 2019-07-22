@@ -1,6 +1,6 @@
 package csu.liutao.ffmpegdemo.medias
 
-class MediaPlayer {
+class MediaPlayer(val path : String){
 
     fun prepare(){}
     fun play(){}

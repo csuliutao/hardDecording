@@ -5,6 +5,7 @@ import android.media.MediaFormat
 import android.media.MediaMuxer
 import csu.liutao.ffmpegdemo.Utils
 import java.nio.ByteBuffer
+import java.util.concurrent.locks.ReentrantLock
 
 class MuxerManger (val path:String, val format : Int = MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4){
     private var muxer : MediaMuxer? = null
@@ -16,7 +17,10 @@ class MuxerManger (val path:String, val format : Int = MediaMuxer.OutputFormat.M
     }
 
     fun start() {
-        muxer?.start()
+        if (isReadyStart()) {
+            muxer?.start()
+            startCond.signalAll()
+        }
     }
 
     fun release() {
@@ -28,6 +32,10 @@ class MuxerManger (val path:String, val format : Int = MediaMuxer.OutputFormat.M
         muxer?.stop()
     }
 
+    private fun isReadyStart() :Boolean {
+        return (videoTrack != -1) and (audioTrack != -1)
+    }
+
     fun addTrack(mediaFormat: MediaFormat, isVedio: Boolean = true) {
         Utils.log("add track")
         val trackId = muxer?.addTrack(mediaFormat) ?: -1
@@ -35,12 +43,14 @@ class MuxerManger (val path:String, val format : Int = MediaMuxer.OutputFormat.M
     }
 
     fun write(buffer: ByteBuffer, info : MediaCodec.BufferInfo, isVedio: Boolean = true) {
-        synchronized(lock) {
-            muxer?.writeSampleData(if(isVedio) videoTrack else audioTrack, buffer, info)
-        }
+        lock.lock()
+        if (!isReadyStart()) startCond.await()
+        muxer?.writeSampleData(if(isVedio) videoTrack else audioTrack, buffer, info)
+        lock.unlock()
     }
 
     companion object {
-        val lock = Object()
+        val lock = ReentrantLock()
+        val startCond = lock.newCondition()
     }
 }

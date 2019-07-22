@@ -1,4 +1,4 @@
 package csu.liutao.ffmpegdemo.aac
 
-class AacEncoder {
+class AacPlayerRunnable {
 }

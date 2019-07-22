@@ -5,6 +5,7 @@ import android.graphics.SurfaceTexture
 import android.media.Image
 import android.media.MediaCodec
 import android.media.MediaFormat
+import android.media.MediaMuxer
 import android.os.Bundle
 import android.view.Surface
 import android.view.TextureView
@@ -23,8 +24,9 @@ class VideoRecordActivity : AppCompatActivity (){
 
     private var encoder : VideoEncoder? = null
 
-    private var muxer : MuxerManger? = null
+    private var muxer : MediaMuxer? = null
 
+    private var trackId = -1
     val imageListener = object : Camera2Mgr.ImageListener {
         override fun handleImage(image: Image) {
             val srcByte = VideoMgr.instance.imageToNV21(image)
@@ -35,13 +37,13 @@ class VideoRecordActivity : AppCompatActivity (){
     private val codecCallback = object : VideoEncoder.Callback {
         override fun onOutputFormatChanged(format: MediaFormat) {
             Utils.log("format changed")
-            muxer!!.addTrack(format)
+            trackId = muxer!!.addTrack(format)
             muxer!!.start()
         }
 
         override fun onOutputBufferAvailable(buffer: ByteBuffer, info: MediaCodec.BufferInfo) {
             Utils.log("out data available")
-            muxer?.write(buffer, info)
+            muxer?.writeSampleData(trackId, buffer, info)
         }
     }
 
@@ -96,7 +98,7 @@ class VideoRecordActivity : AppCompatActivity (){
         encoder = VideoEncoder(format, codecCallback)
         encoder!!.start()
 
-        muxer = MuxerManger(curFile.canonicalPath)
+        muxer = MediaMuxer(curFile.canonicalPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

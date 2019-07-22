@@ -26,6 +26,9 @@ class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback, 
         return codec!!.outputFormat
     }
 
+    fun stop() {
+        codec?.stop()
+    }
 
     fun release() {
         codec?.release()
