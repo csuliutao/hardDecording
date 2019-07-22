@@ -13,7 +13,7 @@ import csu.liutao.ffmpegdemo.ativities.VideoPlayActivity
 import csu.liutao.ffmpegdemo.medias.MediaMgr
 import java.io.File
 
-class MediasAdapter(var context : Context) : RecyclerView.Adapter<MediasAdapter.Holder>() {
+class MediasAdapter(var context : Context, val isVideo : Boolean = true) : RecyclerView.Adapter<MediasAdapter.Holder>() {
     private val medias = ArrayList<File>()
     private lateinit var inflater: LayoutInflater
 
@@ -25,7 +25,7 @@ class MediasAdapter(var context : Context) : RecyclerView.Adapter<MediasAdapter.
     }
 
     private fun refreshData() : Boolean {
-        val files = MediaMgr.instance.getAllFiles()
+        val files = MediaMgr.instance.getAllFiles(isVideo)
         if (files.size != medias.size) {
             medias.clear()
             medias.addAll(files)

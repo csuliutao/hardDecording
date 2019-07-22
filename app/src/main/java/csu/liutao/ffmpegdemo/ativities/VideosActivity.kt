@@ -22,14 +22,16 @@ open class VideosActivity : AppCompatActivity(){
 
     protected var playerClass: Class<*> = VideoPlayActivity::class.java
 
+    protected var isVideo = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_medias)
-        MediaMgr.instance.initDir(this)
+        MediaMgr.instance.initDir(this, isVideo)
 
         recyclerView = findViewById(R.id.vedio_list)
         recyclerView.layoutManager = LinearLayoutManager(this)
-        adpter = MediasAdapter(this)
+        adpter = MediasAdapter(this, isVideo)
         adpter.playerClass = playerClass
         recyclerView.adapter = adpter
 

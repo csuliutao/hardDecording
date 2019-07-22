@@ -3,34 +3,40 @@ package csu.liutao.ffmpegdemo.medias
 import android.content.Context
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
-import android.media.MediaMuxer
 import csu.liutao.ffmpegdemo.Utils
-import csu.liutao.ffmpegdemo.audios.AudioMgr
 import java.io.File
-import java.util.*
 
 class MediaMgr private constructor(){
-    private val PATH = "medias"
-    private val END_TAG = ".mp4"
+    private val VIDEO_PATH = "video"
+    private val H264 = ".h264"
+    private lateinit var vedioDir :String
 
+    private val MEDIA_PATH = "media"
+    private val MP4 = ".mp4"
     private lateinit var mediaDir :String
 
-    fun initDir(context : Context) {
-        mediaDir = context.externalCacheDir.canonicalPath + File.separator + PATH
-        val dir = File(mediaDir)
+    fun initDir(context : Context, isVideo : Boolean = true) {
+        val dir : File
+        if (isVideo) {
+            vedioDir = context.externalCacheDir.canonicalPath + File.separator + VIDEO_PATH
+            dir = File(vedioDir)
+        } else {
+            mediaDir = context.externalCacheDir.canonicalPath + File.separator + MEDIA_PATH
+            dir = File(mediaDir)
+        }
         if (!dir.exists()) {
             dir.mkdir()
         }
     }
 
-    fun getAllFiles () : List<File> {
-        val dir = File(mediaDir)
+    fun getAllFiles (isVideo : Boolean = true) : List<File> {
+        val dir : File = if (isVideo) File(vedioDir) else File(mediaDir)
         val files = dir.listFiles()
         return files.asList()
     }
 
-    fun getNewFile(): File{
-        return Utils.getNewFile(mediaDir, END_TAG)
+    fun getNewFile(isVideo : Boolean = true): File{
+        return Utils.getNewFile(vedioDir, if(isVideo) H264 else MP4)
     }
 
     fun getH264CodecFromat(width : Int, height: Int) : MediaFormat {
@@ -43,7 +49,6 @@ class MediaMgr private constructor(){
         format.setInteger(MediaFormat.KEY_ROTATION, KEY_ROTATION)
         return format
     }
-
 
     companion object{
         val instance = MediaMgr()
