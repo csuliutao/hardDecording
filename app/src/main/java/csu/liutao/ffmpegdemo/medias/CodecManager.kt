@@ -5,20 +5,25 @@ import android.media.MediaFormat
 import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
+import android.view.Surface
 
-class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback){
+class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback, val surface: Surface? = null, val codeFlag : Int = MediaCodec.CONFIGURE_FLAG_ENCODE){
     private var codec : MediaCodec? = null
 
-    init {
+    fun start() {
         val type = format.getString(MediaFormat.KEY_MIME)
         codec = MediaCodec.createEncoderByType(type)
-        codec!!.configure(format, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE)
+        codec!!.configure(format, surface, null, codeFlag)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             codec!!.setCallback(callback, subHandler)
         } else {
             codec!!.setCallback(callback)
         }
         codec!!.start()
+    }
+
+    fun getOutputFormat() : MediaFormat{
+        return codec!!.outputFormat
     }
 
 
@@ -36,7 +41,7 @@ class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback){
             subHandler = Handler(subThread.looper)
         }
 
-        fun release() {
+        fun releaseThread() {
             subThread.quitSafely()
         }
     }

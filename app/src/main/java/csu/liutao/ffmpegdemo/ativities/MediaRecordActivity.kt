@@ -4,7 +4,7 @@ import android.content.pm.PackageManager
 import android.graphics.SurfaceTexture
 import android.media.Image
 import android.media.MediaCodec
-import android.media.MediaMuxer
+import android.media.MediaFormat
 import android.os.Bundle
 import android.view.Surface
 import android.view.TextureView
@@ -12,39 +12,54 @@ import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.Utils
-import csu.liutao.ffmpegdemo.audios.CodecOutputListener
 import csu.liutao.ffmpegdemo.medias.Camera2Mgr
-import csu.liutao.ffmpegdemo.audios.AudioEncoder
+import csu.liutao.ffmpegdemo.medias.VideoEncoder
 import csu.liutao.ffmpegdemo.medias.MediaMgr
-import java.io.File
+import csu.liutao.ffmpegdemo.medias.MuxerManger
 import java.nio.ByteBuffer
 
 class MediaRecordActivity : AppCompatActivity (){
-    private lateinit var curFile : File
-
-    private var isStarted = false
-
     private lateinit var textureView : TextureView
     private lateinit var button : ImageButton
 
     private lateinit var camera2Mgr: Camera2Mgr
 
-    private var videoEncoder : AudioEncoder? = null
+    private var encoder : VideoEncoder? = null
 
-    private var muxer : MediaMuxer? = null
+    private var muxer : MuxerManger? = null
 
-    private var trackId = -1
-
-    private val imageListener = object : Camera2Mgr.ImageListener {
+    val imageListener = object : Camera2Mgr.ImageListener {
         override fun handleImage(image: Image) {
-            val bytes = writeYUVImagToFile(image)
-            videoEncoder?.offerInput(bytes, 0, bytes.size)
+            val plants = image.planes
+            val size = plants.size
+            if (size != 3) throw Exception("image data is wrong")
+            val yBuffer = plants[0].buffer
+            val ySize = yBuffer.remaining()
+            val vBuffer = plants[2].buffer
+            val vSize = vBuffer.remaining()
+
+            val allSize = ySize  + vSize
+            val srcByte = ByteArray(allSize)
+
+            Utils.log("y ="+ ySize+",v="+vSize)
+            //nV21
+            yBuffer.get(srcByte, 0, ySize)
+            vBuffer.get(srcByte, ySize , vSize)
+
+            encoder?.offer(srcByte)
         }
     }
 
-    private val outputListener = object : CodecOutputListener {
-        override fun output(byteBuf: ByteBuffer, bufferInfo: MediaCodec.BufferInfo) {
-            muxer?.writeSampleData(trackId, byteBuf, bufferInfo)
+    private val codecCallback = object : VideoEncoder.Callback {
+        override fun onOutputFormatChanged(format: MediaFormat) {
+            Utils.log("format changed")
+            muxer!!.addTrack(format)
+            muxer!!.start()
+        }
+
+        override fun onOutputBufferAvailable(buffer: ByteBuffer, info: MediaCodec.BufferInfo) {
+            Utils.log("out data available")
+            muxer?.write(buffer, info)
         }
     }
 
@@ -70,25 +85,6 @@ class MediaRecordActivity : AppCompatActivity (){
         }
     }
 
-    private fun writeYUVImagToFile(image: Image) : ByteArray {
-        val plants = image.planes
-        val size = plants.size
-        if (size != 3) throw Exception("image data is wrong")
-        val yBuffer = plants[0].buffer
-        val ySize = yBuffer.remaining()
-        val vBuffer = plants[2].buffer
-        val vSize = vBuffer.remaining()
-
-        val allSize = ySize  + vSize
-        val srcByte = ByteArray(allSize)
-
-        Utils.log("y ="+ ySize+",v="+vSize)
-        //nV21
-        yBuffer.get(srcByte, 0, ySize)
-        vBuffer.get(srcByte, ySize , vSize)
-        return srcByte
-    }
-
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -99,27 +95,26 @@ class MediaRecordActivity : AppCompatActivity (){
 
         textureView.surfaceTextureListener = surfaceTextureListener
         button.setOnClickListener{
-            if (!isStarted) {
-                isStarted = true
-                curFile = MediaMgr.instance.getNewFile()
-                muxer = MediaMuxer(curFile.canonicalPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
-                val format = MediaMgr.instance.getH264CodecFromat(textureView.width, textureView.height)
-                trackId = muxer!!.addTrack(format)
-                muxer!!.start()
-
-                videoEncoder = AudioEncoder.Builder()
-                    .queueSize()
-                    .mediaFormat(format)
-                    .outputLstener(outputListener)
-                    .build()
+            if (muxer == null) {
+                initCodec()
                 camera2Mgr.take()
             } else {
-                isStarted = false
                 camera2Mgr.stop()
+                encoder?.stop()
                 muxer?.stop()
                 finish()
             }
         }
+    }
+
+    private fun initCodec() {
+        val format = MediaMgr.instance.getH264CodecFromat(textureView.width, textureView.height)
+        val curFile = MediaMgr.instance.getNewFile()
+
+        encoder = VideoEncoder(format, codecCallback)
+        encoder!!.start()
+
+        muxer = MuxerManger(curFile.canonicalPath)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -135,7 +130,8 @@ class MediaRecordActivity : AppCompatActivity (){
     override fun onDestroy() {
         super.onDestroy()
         camera2Mgr.release()
-        videoEncoder?.release()
+        encoder?.release()
+        VideoEncoder.releaseThread()
         muxer?.release()
     }
 }
