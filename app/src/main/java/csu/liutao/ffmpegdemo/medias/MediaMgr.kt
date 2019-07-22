@@ -16,7 +16,7 @@ class MediaMgr private constructor(){
     private lateinit var mediaDir :String
 
     fun initDir(context : Context) {
-        mediaDir = context.filesDir.canonicalPath + File.separator + PATH
+        mediaDir = context.externalCacheDir.canonicalPath + File.separator + PATH
         val dir = File(mediaDir)
         if (!dir.exists()) {
             dir.mkdir()
