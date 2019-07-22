@@ -2,6 +2,7 @@ package csu.liutao.ffmpegdemo.audios
 
 import android.media.*
 import java.io.File
+import java.nio.ByteBuffer
 
 class AudioTrackMgr private constructor(){
     private lateinit var curFile : File
@@ -19,8 +20,10 @@ class AudioTrackMgr private constructor(){
     }
 
     private val listener = object : CodecOutputListener {
-        override fun output(bytes: ByteArray) {
-            audioTrack!!.write(bytes, 0, bytes.size)
+        override fun output(byteBuf: ByteBuffer, bufferInfo: MediaCodec.BufferInfo) {
+            val byte = ByteArray(bufferInfo.size)
+            byteBuf.get(byte, bufferInfo.offset, bufferInfo.size)
+            audioTrack!!.write(byte, 0, byte.size)
         }
     }
 

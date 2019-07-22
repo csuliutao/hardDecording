@@ -1,4 +1,4 @@
-package csu.liutao.ffmpegdemo.medias
+package csu.liutao.ffmpegdemo.audios
 
 import android.media.MediaCodec
 import android.media.MediaFormat
@@ -6,28 +6,24 @@ import android.os.Build
 import android.os.Handler
 import android.os.HandlerThread
 import csu.liutao.ffmpegdemo.Utils
-import csu.liutao.ffmpegdemo.audios.AudioMgr
-import csu.liutao.ffmpegdemo.audios.CodecOutputListener
 import java.util.concurrent.ArrayBlockingQueue
 
-open class MediaEncoder private constructor(){
+open class AudioEncoder private constructor(){
     private var format = AudioMgr.mgr.getAudioBaseFormat()
     private lateinit var mediaCodec : MediaCodec
     private lateinit var queue : ArrayBlockingQueue<Input>
 
     private lateinit var listener : CodecOutputListener
 
-    private val tag = "MediaEncoder"
+    private val tag = "AudioEncoder"
 
-    private val subThread = HandlerThread("MediaEncoder")
+    private val subThread = HandlerThread("AudioEncoder")
     private lateinit var subHandler : Handler
 
     private val callback = object : MediaCodec.Callback() {
         override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
             val outBuffer = mediaCodec.getOutputBuffer(index)
-            val bytes = ByteArray(info.size)
-            outBuffer.get(bytes, info.offset, info.size)
-            listener.output(bytes)
+            listener.output(outBuffer, info)
             mediaCodec.releaseOutputBuffer(index, false)
         }
 
@@ -83,7 +79,7 @@ open class MediaEncoder private constructor(){
     data class Input(var bytes: ByteArray,var offset: Int,var size: Int)
 
     class Builder {
-        private val mgr = MediaEncoder()
+        private val mgr = AudioEncoder()
         fun mediaFormat(format: MediaFormat) : Builder {
             mgr.format = format
             return this
@@ -99,7 +95,7 @@ open class MediaEncoder private constructor(){
             return this
         }
 
-        fun build() : MediaEncoder {
+        fun build() : AudioEncoder {
             mgr.start()
             return mgr
         }

@@ -41,6 +41,7 @@ class AudioMgr private constructor(){
         return files.asList()
     }
 
+    // 音、视频单独编码需要格式头，一起则不需要
     fun addADTStoPacket(packet: ByteArray, packetLen: Int) {
         val profile = KEY_AAC_PROFILE // AAC LC
         val chanCfg = CHANNEL_COUNT // CPE

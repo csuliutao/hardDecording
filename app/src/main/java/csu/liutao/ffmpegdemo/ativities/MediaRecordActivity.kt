@@ -3,6 +3,8 @@ package csu.liutao.ffmpegdemo.ativities
 import android.content.pm.PackageManager
 import android.graphics.SurfaceTexture
 import android.media.Image
+import android.media.MediaCodec
+import android.media.MediaMuxer
 import android.os.Bundle
 import android.view.Surface
 import android.view.TextureView
@@ -12,15 +14,13 @@ import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.audios.CodecOutputListener
 import csu.liutao.ffmpegdemo.medias.Camera2Mgr
-import csu.liutao.ffmpegdemo.medias.MediaEncoder
+import csu.liutao.ffmpegdemo.audios.AudioEncoder
 import csu.liutao.ffmpegdemo.medias.MediaMgr
 import java.io.File
-import java.io.FileOutputStream
+import java.nio.ByteBuffer
 
 class MediaRecordActivity : AppCompatActivity (){
     private lateinit var curFile : File
-
-    private var fos : FileOutputStream? = null
 
     private var isStarted = false
 
@@ -29,7 +29,11 @@ class MediaRecordActivity : AppCompatActivity (){
 
     private lateinit var camera2Mgr: Camera2Mgr
 
-    private var videoEncoder : MediaEncoder? = null
+    private var videoEncoder : AudioEncoder? = null
+
+    private var muxer : MediaMuxer? = null
+
+    private var trackId = -1
 
     private val imageListener = object : Camera2Mgr.ImageListener {
         override fun handleImage(image: Image) {
@@ -39,10 +43,8 @@ class MediaRecordActivity : AppCompatActivity (){
     }
 
     private val outputListener = object : CodecOutputListener {
-        override fun output(bytes: ByteArray) {
-            if (fos != null) {
-                fos!!.write(bytes)
-            }
+        override fun output(byteBuf: ByteBuffer, bufferInfo: MediaCodec.BufferInfo) {
+            muxer?.writeSampleData(trackId, byteBuf, bufferInfo)
         }
     }
 
@@ -100,16 +102,21 @@ class MediaRecordActivity : AppCompatActivity (){
             if (!isStarted) {
                 isStarted = true
                 curFile = MediaMgr.instance.getNewFile()
-                fos = FileOutputStream(curFile)
-                videoEncoder = MediaEncoder.Builder()
+                muxer = MediaMuxer(curFile.canonicalPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+                val format = MediaMgr.instance.getH264CodecFromat(textureView.width, textureView.height)
+                trackId = muxer!!.addTrack(format)
+                muxer!!.start()
+
+                videoEncoder = AudioEncoder.Builder()
                     .queueSize()
-                    .mediaFormat(MediaMgr.instance.getH264CodecFromat(textureView.width, textureView.height))
+                    .mediaFormat(format)
                     .outputLstener(outputListener)
                     .build()
                 camera2Mgr.take()
             } else {
                 isStarted = false
                 camera2Mgr.stop()
+                muxer?.stop()
                 finish()
             }
         }
@@ -129,7 +136,6 @@ class MediaRecordActivity : AppCompatActivity (){
         super.onDestroy()
         camera2Mgr.release()
         videoEncoder?.release()
-        fos?.close()
-        fos = null
+        muxer?.release()
     }
 }

@@ -25,9 +25,7 @@ class AudioDecoder private constructor(){
                 return
             }
             val outBuffer = mediaCodec.getOutputBuffer(index)
-            val bytes = ByteArray(info.size)
-            outBuffer.get(bytes, info.offset, info.size)
-            outputListener.output(bytes)
+            outputListener.output(outBuffer, info)
             mediaCodec.releaseOutputBuffer(index, false)
         }
 
