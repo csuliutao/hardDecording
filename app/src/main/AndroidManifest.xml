@@ -20,19 +20,23 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ativities.SurfaceImgActivity"/>
+        <activity android:name=".ativities.SurfaceImgActivity" android:theme="@style/FullScreen"/>
 
         <activity android:name=".ativities.AudioRecordsActivity"/>
 
-        <activity android:name=".ativities.PictureActivity"/>
+        <activity android:name=".ativities.PictureActivity" android:theme="@style/FullScreen"/>
 
         <activity android:name=".ativities.VideosActivity"/>
 
-        <activity android:name=".ativities.VideoRecordActivity"/>
-
-        <activity android:name=".ativities.VideoPlayActivity"/>
-
         <activity android:name=".ativities.MediasActivity"/>
+
+        <activity android:name=".ativities.VideoRecordActivity" android:theme="@style/FullScreen"/>
+
+        <activity android:name=".ativities.VideoPlayActivity" android:theme="@style/FullScreen"/>
+
+        <activity android:name=".ativities.MediaRecordActivity" android:theme="@style/FullScreen"/>
+
+        <activity android:name=".ativities.MediaPlayerActivity" android:theme="@style/FullScreen"/>
     </application>
 
 </manifest>

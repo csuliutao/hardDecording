@@ -2,7 +2,7 @@ package csu.liutao.ffmpegdemo.ativities
 
 class MediasActivity : VideosActivity(){
     init {
-        recoderClass = VideoRecordActivity::class.java
-        playerClass = VideoPlayActivity::class.java
+        recoderClass = MediaRecordActivity::class.java
+        playerClass = MediaPlayerActivity::class.java
     }
 }

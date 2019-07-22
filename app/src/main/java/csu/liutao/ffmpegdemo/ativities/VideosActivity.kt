@@ -18,9 +18,9 @@ open class VideosActivity : AppCompatActivity(){
 
     private lateinit var adpter : MediasAdapter
 
-    protected var recoderClass = VideoRecordActivity::class.java
+    protected var recoderClass: Class<*> = VideoRecordActivity::class.java
 
-    protected var playerClass = VideoPlayActivity::class.java
+    protected var playerClass: Class<*> = VideoPlayActivity::class.java
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)

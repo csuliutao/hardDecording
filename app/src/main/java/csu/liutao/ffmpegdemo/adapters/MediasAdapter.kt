@@ -17,7 +17,7 @@ class MediasAdapter(var context : Context) : RecyclerView.Adapter<MediasAdapter.
     private val medias = ArrayList<File>()
     private lateinit var inflater: LayoutInflater
 
-    var playerClass = VideoPlayActivity::class.java
+    var playerClass : Class<*> = VideoPlayActivity::class.java
 
     init {
         inflater = LayoutInflater.from(context)
