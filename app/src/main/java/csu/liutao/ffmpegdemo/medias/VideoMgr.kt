@@ -1,6 +1,7 @@
 package csu.liutao.ffmpegdemo.medias
 
 import android.content.Context
+import android.media.Image
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import csu.liutao.ffmpegdemo.Utils
@@ -45,6 +46,25 @@ class VideoMgr private constructor(){
     fun addH264Cds(format: MediaFormat) {
         format.setByteBuffer("csd-0", ByteBuffer.wrap(sps))
         format.setByteBuffer("csd-1", ByteBuffer.wrap(pps))
+    }
+
+    fun imageToNV21(image : Image) : ByteArray{
+        val plants = image.planes
+        val size = plants.size
+        if (size != 3) throw Exception("image data is wrong")
+        val yBuffer = plants[0].buffer
+        val ySize = yBuffer.remaining()
+        val vBuffer = plants[2].buffer
+        val vSize = vBuffer.remaining()
+
+        val allSize = ySize  + vSize
+        val srcByte = ByteArray(allSize)
+
+        Utils.log("y ="+ ySize+",v="+vSize)
+        //nV21
+        yBuffer.get(srcByte, 0, ySize)
+        vBuffer.get(srcByte, ySize , vSize)
+        return srcByte
     }
 
 

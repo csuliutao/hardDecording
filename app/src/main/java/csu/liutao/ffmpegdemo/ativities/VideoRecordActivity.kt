@@ -12,10 +12,7 @@ import android.widget.ImageButton
 import androidx.appcompat.app.AppCompatActivity
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.Utils
-import csu.liutao.ffmpegdemo.medias.Camera2Mgr
-import csu.liutao.ffmpegdemo.medias.VideoEncoder
-import csu.liutao.ffmpegdemo.medias.MediaMgr
-import csu.liutao.ffmpegdemo.medias.MuxerManger
+import csu.liutao.ffmpegdemo.medias.*
 import java.nio.ByteBuffer
 
 class VideoRecordActivity : AppCompatActivity (){
@@ -30,22 +27,7 @@ class VideoRecordActivity : AppCompatActivity (){
 
     val imageListener = object : Camera2Mgr.ImageListener {
         override fun handleImage(image: Image) {
-            val plants = image.planes
-            val size = plants.size
-            if (size != 3) throw Exception("image data is wrong")
-            val yBuffer = plants[0].buffer
-            val ySize = yBuffer.remaining()
-            val vBuffer = plants[2].buffer
-            val vSize = vBuffer.remaining()
-
-            val allSize = ySize  + vSize
-            val srcByte = ByteArray(allSize)
-
-            Utils.log("y ="+ ySize+",v="+vSize)
-            //nV21
-            yBuffer.get(srcByte, 0, ySize)
-            vBuffer.get(srcByte, ySize , vSize)
-
+            val srcByte = VideoMgr.instance.imageToNV21(image)
             encoder?.offer(srcByte)
         }
     }
