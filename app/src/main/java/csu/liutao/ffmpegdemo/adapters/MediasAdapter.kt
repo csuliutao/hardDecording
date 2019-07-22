@@ -9,13 +9,15 @@ import android.widget.Button
 import androidx.recyclerview.widget.RecyclerView
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.Utils
-import csu.liutao.ffmpegdemo.ativities.MediaPlayActivity
+import csu.liutao.ffmpegdemo.ativities.VideoPlayActivity
 import csu.liutao.ffmpegdemo.medias.MediaMgr
 import java.io.File
 
 class MediasAdapter(var context : Context) : RecyclerView.Adapter<MediasAdapter.Holder>() {
     private val medias = ArrayList<File>()
     private lateinit var inflater: LayoutInflater
+
+    var playerClass = VideoPlayActivity::class.java
 
     init {
         inflater = LayoutInflater.from(context)
@@ -50,7 +52,7 @@ class MediasAdapter(var context : Context) : RecyclerView.Adapter<MediasAdapter.
     override fun onBindViewHolder(holder: Holder, position: Int) {
         holder.button.text = medias.get(position).name
         holder.button.setOnClickListener {
-            val intent = Intent(context, MediaPlayActivity::class.java)
+            val intent = Intent(context, playerClass)
             intent.putExtra(Utils.PLAY_FILE, medias.get(position))
             context.startActivity(intent)
         }

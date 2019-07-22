@@ -12,7 +12,7 @@ import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.medias.VideoDecoder
 import java.io.File
 
-class MediaPlayActivity : AppCompatActivity() {
+class VideoPlayActivity : AppCompatActivity() {
     private lateinit var filePath : File
 
     private lateinit var textureView: TextureView

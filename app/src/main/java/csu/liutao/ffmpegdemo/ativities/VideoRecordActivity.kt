@@ -18,7 +18,7 @@ import csu.liutao.ffmpegdemo.medias.MediaMgr
 import csu.liutao.ffmpegdemo.medias.MuxerManger
 import java.nio.ByteBuffer
 
-class MediaRecordActivity : AppCompatActivity (){
+class VideoRecordActivity : AppCompatActivity (){
     private lateinit var textureView : TextureView
     private lateinit var button : ImageButton
 
@@ -79,8 +79,8 @@ class MediaRecordActivity : AppCompatActivity (){
                 .surface(Surface(surface), false)
                 .imageReader(textureView.width, textureView.height, imageListener)
                 .build()
-            if (Utils.checkCameraPermission(this@MediaRecordActivity)) {
-                camera2Mgr.openCamera(this@MediaRecordActivity)
+            if (Utils.checkCameraPermission(this@VideoRecordActivity)) {
+                camera2Mgr.openCamera(this@VideoRecordActivity)
             }
         }
     }

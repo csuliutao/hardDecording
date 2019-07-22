@@ -26,11 +26,13 @@
 
         <activity android:name=".ativities.PictureActivity"/>
 
+        <activity android:name=".ativities.VideosActivity"/>
+
+        <activity android:name=".ativities.VideoRecordActivity"/>
+
+        <activity android:name=".ativities.VideoPlayActivity"/>
+
         <activity android:name=".ativities.MediasActivity"/>
-
-        <activity android:name=".ativities.MediaRecordActivity"/>
-
-        <activity android:name=".ativities.MediaPlayActivity"/>
     </application>
 
 </manifest>

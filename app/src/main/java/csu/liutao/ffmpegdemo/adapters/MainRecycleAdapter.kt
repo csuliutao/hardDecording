@@ -8,10 +8,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import androidx.recyclerview.widget.RecyclerView
 import csu.liutao.ffmpegdemo.R
-import csu.liutao.ffmpegdemo.ativities.MediasActivity
-import csu.liutao.ffmpegdemo.ativities.PictureActivity
-import csu.liutao.ffmpegdemo.ativities.AudioRecordsActivity
-import csu.liutao.ffmpegdemo.ativities.SurfaceImgActivity
+import csu.liutao.ffmpegdemo.ativities.*
 
 class MainRecycleAdapter(val context : Context): RecyclerView.Adapter<MainRecycleAdapter.MainHolder>() {
     private val decs = ArrayList<String>()
@@ -30,6 +27,9 @@ class MainRecycleAdapter(val context : Context): RecyclerView.Adapter<MainRecycl
         intents.add(Intent(context, PictureActivity::class.java))
 
         decs.add("camera vedio")
+        intents.add(Intent(context, VideosActivity::class.java))
+
+        decs.add("media ...")
         intents.add(Intent(context, MediasActivity::class.java))
     }
 
