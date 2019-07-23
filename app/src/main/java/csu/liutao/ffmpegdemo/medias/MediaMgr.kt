@@ -1,6 +1,7 @@
 package csu.liutao.ffmpegdemo.medias
 
 import android.content.Context
+import android.media.AudioFormat
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import csu.liutao.ffmpegdemo.Utils
@@ -49,6 +50,12 @@ class MediaMgr private constructor(){
 
         format.setInteger(MediaFormat.KEY_ROTATION, KEY_ROTATION)
         return format
+    }
+
+    fun getChannelMaskByCount(count : Int) : Int {
+        if (count == 2) return AudioFormat.CHANNEL_IN_STEREO
+        return AudioFormat.CHANNEL_IN_STEREO
+
     }
 
     companion object{

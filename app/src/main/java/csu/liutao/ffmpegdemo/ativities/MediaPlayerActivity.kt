@@ -12,7 +12,6 @@ import java.io.File
 
 class MediaPlayerActivity : AppCompatActivity() {
     private lateinit var textureView: TextureView
-    private var isStart = false
     private lateinit var mediaPlayer: MediaPlayer
 
     private lateinit var file : File
@@ -27,6 +26,7 @@ class MediaPlayerActivity : AppCompatActivity() {
         override fun onSurfaceTextureAvailable(surface: SurfaceTexture?, width: Int, height: Int) {
             mediaPlayer = MediaPlayer(file.canonicalPath)
             mediaPlayer.prapare(Surface(surface))
+            mediaPlayer.play()
         }
     }
 
@@ -37,14 +37,9 @@ class MediaPlayerActivity : AppCompatActivity() {
         file = intent.getSerializableExtra(Utils.PLAY_FILE) as File
         textureView.surfaceTextureListener = textureCallback
         textureView.setOnClickListener {
-            if (!isStart) {
-                isStart = true
-                mediaPlayer.play()
-            } else {
-                mediaPlayer.stop()
-                mediaPlayer.release()
-                finish()
-            }
+            mediaPlayer.stop()
+            mediaPlayer.release()
+            finish()
         }
     }
 }

@@ -12,10 +12,14 @@ class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback, 
 
     fun start() {
         val type = format.getString(MediaFormat.KEY_MIME)
-        codec = MediaCodec.createEncoderByType(type)
+        if (codeFlag == 0) {
+            codec = MediaCodec.createDecoderByType(type)
+        } else {
+            codec = MediaCodec.createEncoderByType(type)
+        }
         codec!!.configure(format, surface, null, codeFlag)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            codec!!.setCallback(callback, subHandler)
+            codec!!.setCallback(callback, getHandler(type))
         } else {
             codec!!.setCallback(callback)
         }
@@ -35,17 +39,22 @@ class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback, 
         codec = null
     }
 
+    private fun getHandler(type : String) : Handler {
+        return if (type.startsWith("audio")) Handler(aacThread.looper) else Handler(avcThread.looper)
+    }
+
     companion object {
-        private val subThread = HandlerThread("CodecManager")
-        private lateinit var subHandler: Handler
+        private val aacThread = HandlerThread("aacThread")
+        private val avcThread = HandlerThread("avcThread")
 
         init {
-            subThread.start()
-            subHandler = Handler(subThread.looper)
+            aacThread.start()
+            avcThread.start()
         }
 
         fun releaseThread() {
-            subThread.quitSafely()
+            aacThread.quitSafely()
+            avcThread.quitSafely()
         }
     }
 }

@@ -3,18 +3,21 @@ package csu.liutao.ffmpegdemo.h264
 import android.media.MediaCodec
 import android.media.MediaFormat
 import android.view.Surface
+import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.medias.CodecManager
 import csu.liutao.ffmpegdemo.medias.ExtractorManager
 import csu.liutao.ffmpegdemo.medias.MediaInfo
 import java.util.concurrent.LinkedBlockingDeque
 
 class AvcPlayer (val path : String, queueSize : Int = 10){
+    private val tag = "AvcPlayer"
     private lateinit var extractorMgr: ExtractorManager
     private lateinit var codecMgr : CodecManager
     private lateinit var queue : LinkedBlockingDeque<MediaInfo>
 
     private val callback = object : MediaCodec.Callback(){
         override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
+            Utils.log(tag, "output length="+ info.size)
             codec.releaseOutputBuffer(index, true)
         }
 
@@ -22,7 +25,8 @@ class AvcPlayer (val path : String, queueSize : Int = 10){
             val buffer = codec.getInputBuffer(index)
             buffer.clear()
             val length = extractorMgr.read(buffer, 0)
-            codec.queueInputBuffer(index, 0, length, 0, MediaCodec.BUFFER_FLAG_KEY_FRAME)
+            Utils.log(tag, "input length="+ length)
+            if (length > 0) codec.queueInputBuffer(index, 0, length, 0, 0)
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) = Unit

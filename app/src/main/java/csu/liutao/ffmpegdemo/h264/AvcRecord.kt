@@ -56,9 +56,10 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
         cameraMgr.openCamera(context)
         val format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height)
         format.setInteger(MediaFormat.KEY_BIT_RATE, width * height * 3)
-        format.setInteger(MediaFormat.KEY_FRAME_RATE, 30)
+        format.setInteger(MediaFormat.KEY_FRAME_RATE, 25)
         format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
+        format.setInteger(MediaFormat.KEY_ROTATION, 90)
         codecMgr = CodecManager(format, codecCallback)
     }
 
