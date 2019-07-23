@@ -19,25 +19,42 @@ class MediaRecordActivity : AppCompatActivity() {
 
     private lateinit var curFile : File
 
+    private val callback = object : TextureView.SurfaceTextureListener {
+        override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture?, width: Int, height: Int) = Unit
+
+        override fun onSurfaceTextureUpdated(surface: SurfaceTexture?) = Unit
+
+        override fun onSurfaceTextureDestroyed(surface: SurfaceTexture?): Boolean =true
+
+        override fun onSurfaceTextureAvailable(surface: SurfaceTexture?, width: Int, height: Int) {
+            curFile = MediaMgr.instance.getNewFile(false)
+            mediaRecord = MediaRecord(curFile.canonicalPath)
+            if (Utils.checkMediaPermission(this@MediaRecordActivity)) mediaRecord.prepare(this@MediaRecordActivity,
+                Surface(surface), width, height
+            )
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.media_base_layout)
         textureView = findViewById(R.id.texture)
+        textureView.surfaceTextureListener = callback
         textureView.setOnClickListener {
             if (!isStart) {
                 isStart = true
-                curFile = MediaMgr.instance.getNewFile(false)
-                mediaRecord = MediaRecord(curFile.canonicalPath)
-                mediaRecord.prepare(this, Surface(textureView.surfaceTexture), textureView.width, textureView.height)
                 mediaRecord.startRecord()
             } else {
-                isStart = false
                 mediaRecord.saveRecord()
                 mediaRecord.release()
                 finish()
             }
         }
-        Utils.checkMediaPermission(this@MediaRecordActivity)
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        if (!isStart) curFile.delete()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -50,6 +67,7 @@ class MediaRecordActivity : AppCompatActivity() {
                     return
                 }
             }
+            mediaRecord.prepare(this, Surface(textureView.surfaceTexture), textureView.width, textureView.height)
         }
     }
 }

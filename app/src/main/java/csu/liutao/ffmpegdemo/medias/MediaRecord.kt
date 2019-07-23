@@ -24,13 +24,12 @@ class MediaRecord(val path: String) {
         avcRecord.start()
     }
     fun saveRecord(){
-        muxerManger.stop()
         aacRecord.stop()
         avcRecord.stop()
     }
     fun release(){
-        muxerManger.release()
         aacRecord.release()
         avcRecord.release()
+        muxerManger.release()
     }
 }

@@ -3,6 +3,7 @@ package csu.liutao.ffmpegdemo.h264
 import android.content.Context
 import android.media.Image
 import android.media.MediaCodec
+import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import android.view.Surface
 import csu.liutao.ffmpegdemo.medias.*
@@ -54,6 +55,10 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
             .build()
         cameraMgr.openCamera(context)
         val format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height)
+        format.setInteger(MediaFormat.KEY_BIT_RATE, width * height * 3)
+        format.setInteger(MediaFormat.KEY_FRAME_RATE, 30)
+        format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
+        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
         codecMgr = CodecManager(format, codecCallback)
     }
 
