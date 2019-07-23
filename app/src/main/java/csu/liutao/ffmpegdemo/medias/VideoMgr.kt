@@ -86,8 +86,8 @@ class VideoMgr private constructor(){
 
             val rowOffset = width * height + row * width / 2
             for (col in 0 until width / (2 * pixelStride)) {
-                result[rowOffset + col * 2] = rowBytesCr[col * pixelStride]
-                result[rowOffset + col * 2 + 1] = rowBytesCb[col * pixelStride]
+                result[rowOffset + col * 2] = rowBytesCb[col * pixelStride]
+                result[rowOffset + col * 2 + 1] = rowBytesCr[col * pixelStride]
             }
         }
         return result

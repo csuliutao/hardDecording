@@ -23,10 +23,14 @@ class AacPlayer(val curFile : String, queueSize : Int = 10){
             val bytes = ByteArray(info.size)
             buffer.get(bytes, info.offset, info.size)
             audioTrack.write(bytes, 0, info.size)
-            codec.releaseOutputBuffer(index, false)
+            if (codecManager.isCodec()) codec.releaseOutputBuffer(index, false)
         }
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
+            if (!codecManager.isCodec()) {
+                queue.clear()
+                return
+            }
             val buffer = codec.getInputBuffer(index)
             buffer.clear()
             val info = ExtractorManager.Info()
@@ -36,10 +40,6 @@ class AacPlayer(val curFile : String, queueSize : Int = 10){
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
-            if (!codecManager.isCodec()) {
-                queue.clear()
-                return
-            }
             Utils.log(tag, "onOutputFormatChanged")
             val sampleSize = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
             val count = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)

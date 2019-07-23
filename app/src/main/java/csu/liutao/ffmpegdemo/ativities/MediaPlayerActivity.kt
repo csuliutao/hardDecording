@@ -40,13 +40,13 @@ class MediaPlayerActivity : AppCompatActivity() {
         textureView.surfaceTextureListener = textureCallback
         textureView.setOnClickListener {
             mediaPlayer.stop()
-            mediaPlayer.release()
             finish()
         }
     }
 
     override fun onDestroy() {
         super.onDestroy()
+        mediaPlayer.release()
         CodecManager.releaseThread()
     }
 }
