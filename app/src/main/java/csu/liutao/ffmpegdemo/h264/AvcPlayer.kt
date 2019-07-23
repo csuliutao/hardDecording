@@ -24,9 +24,10 @@ class AvcPlayer (val path : String, queueSize : Int = 10){
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
             val buffer = codec.getInputBuffer(index)
             buffer.clear()
-            val length = extractorMgr.read(buffer, 0)
+            val info = ExtractorManager.Info()
+            val length = extractorMgr.read(buffer, info)
             Utils.log(tag, "input length="+ length)
-            if (length > 0) codec.queueInputBuffer(index, 0, length, 0, 0)
+            if (length > 0) codec.queueInputBuffer(index, 0, length, info.time, info.flag)
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) = Unit
