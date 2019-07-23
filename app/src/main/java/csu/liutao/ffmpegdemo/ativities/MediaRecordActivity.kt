@@ -55,8 +55,8 @@ class MediaRecordActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         if (!isStart) curFile.delete()
+        super.onDestroy()
         CodecManager.releaseThread()
     }
 
@@ -65,7 +65,7 @@ class MediaRecordActivity : AppCompatActivity() {
             var size = grantResults.size
             while (size > 0) {
                 size--
-                if (grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+                if (grantResults[size] != PackageManager.PERMISSION_GRANTED) {
                     finish()
                     return
                 }

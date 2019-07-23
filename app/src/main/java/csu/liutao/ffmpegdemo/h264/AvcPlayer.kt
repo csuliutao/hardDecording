@@ -18,7 +18,7 @@ class AvcPlayer (val path : String, queueSize : Int = 10){
     private val callback = object : MediaCodec.Callback(){
         override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
             Utils.log(tag, "output length="+ info.size)
-            codec.releaseOutputBuffer(index, true)
+            if (codecMgr.isCodec()) codec.releaseOutputBuffer(index, true)
         }
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
@@ -31,7 +31,7 @@ class AvcPlayer (val path : String, queueSize : Int = 10){
             val info = ExtractorManager.Info()
             val length = extractorMgr.read(buffer, info)
             Utils.log(tag, "input length="+ length)
-            if (length > 0) codec.queueInputBuffer(index, 0, length, info.time, info.flag)
+            if (length > 0 && codecMgr.isCodec()) codec.queueInputBuffer(index, 0, length, info.time, info.flag)
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) = Unit

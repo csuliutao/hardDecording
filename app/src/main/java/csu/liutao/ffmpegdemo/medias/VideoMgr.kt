@@ -9,7 +9,7 @@ import java.io.File
 import java.nio.ByteBuffer
 import android.opengl.ETC1.getHeight
 import android.opengl.ETC1.getWidth
-
+import java.lang.Math.min
 
 
 class VideoMgr private constructor(){
@@ -42,71 +42,51 @@ class VideoMgr private constructor(){
         format.setInteger(MediaFormat.KEY_FRAME_RATE, KEY_FRAME_RATE)
         format.setInteger(MediaFormat.KEY_COLOR_FORMAT, KEY_COLOR_FORMAT)
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, KEY_I_FRAME_INTERVAL)
-//        addH264Cds(format)
         format.setInteger(MediaFormat.KEY_ROTATION, KEY_ROTATION)
         return format
-    }
-
-    fun addH264Cds(format: MediaFormat) {
-        format.setByteBuffer("csd-0", ByteBuffer.wrap(sps))
-        format.setByteBuffer("csd-1", ByteBuffer.wrap(pps))
     }
 
     fun imageToNV21(image : Image) : ByteArray{
         val width = image.width
         val height = image.height
-
-        val planes = image.planes
         val result = ByteArray(width * height * 3 / 2)
 
-        var stride = planes[0].rowStride
+        val yPlant = image.planes[0]
+        val yWidth = min(yPlant.rowStride, width)
 
-        if (stride == width) {
-            planes[0].buffer.get(result, 0, width * height)
-        } else {
-            for (row in 0 until height) {
-                planes[0].buffer.position(row * stride)
-                planes[0].buffer.get(result, row * width, width)
+        val planes = image.planes
+
+        for(row in 0 until height) {
+            yPlant.buffer.position(row * yWidth)
+            yPlant.buffer.get(result,row * yWidth, yWidth)
+        }
+
+        var ySize = yWidth * height
+
+        val uPlane = image.planes[1]
+        val vPlane = image.planes[2]
+
+        val uvStride = min(uPlane.rowStride, yWidth)
+        val uvPixel = uPlane.pixelStride
+
+        val rowBytesCb = ByteArray(uvStride)
+        val rowBytesCr = ByteArray(uvStride)
+
+        for (row in 0 until height / uvPixel) {
+            uPlane.buffer.position(row * uvStride)
+            uPlane.buffer.get(rowBytesCb)
+
+            vPlane.buffer.position(row * uvStride)
+            vPlane.buffer.get(rowBytesCr)
+
+            val offset = ySize + row * uvStride / uvPixel
+            for (col in 0 until uvStride / uvPixel) {
+                result[offset + col * 2] = rowBytesCb[col * uvPixel]
+                result[offset + col * 2 + 1] = rowBytesCr[col * uvPixel]
             }
         }
 
-        stride = planes[1].rowStride
-
-        val pixelStride = planes[1].pixelStride
-
-        val rowBytesCb = ByteArray(stride)
-        val rowBytesCr = ByteArray(stride)
-
-        for (row in 0 until height / (2 * pixelStride)) {
-            planes[1].buffer.position(row * stride)
-            planes[1].buffer.get(rowBytesCb)
-
-            planes[2].buffer.position(row * stride)
-            planes[2].buffer.get(rowBytesCr)
-
-            val rowOffset = width * height + row * width / 2
-            for (col in 0 until width / (2 * pixelStride)) {
-                result[rowOffset + col * 2] = rowBytesCb[col * pixelStride]
-                result[rowOffset + col * 2 + 1] = rowBytesCr[col * pixelStride]
-            }
-        }
         return result
-        /*val plants = image.planes
-        val size = plants.size
-        if (size != 3) throw Exception("image data is wrong")
-        val yBuffer = plants[0].buffer
-        val ySize = yBuffer.remaining()
-        val vBuffer = plants[2].buffer
-        val vSize = vBuffer.remaining()
-
-        val allSize = ySize  + vSize
-        val srcByte = ByteArray(allSize)
-
-        Utils.log("y ="+ ySize+",v="+vSize)
-        //nV21
-        yBuffer.get(srcByte, 0, ySize)
-        vBuffer.get(srcByte, ySize , vSize)
-        return srcByte*/
     }
 
 
@@ -117,7 +97,7 @@ class VideoMgr private constructor(){
         val KEY_ROTATION = 90
         val KEY_I_FRAME_INTERVAL = 2
 
-        val sps = byteArrayOf(0, 0, 0, 1, 103, 100, 0, 40, -84, 52, -59, 1, -32, 17, 31, 120, 11, 80, 16, 16, 31, 0, 0, 3, 3, -23, 0, 0, -22, 96, -108)
-        val pps = byteArrayOf(0, 0, 0, 1, 104, -18, 60, -128)
+        /*val sps = byteArrayOf(0, 0, 0, 1, 103, 100, 0, 40, -84, 52, -59, 1, -32, 17, 31, 120, 11, 80, 16, 16, 31, 0, 0, 3, 3, -23, 0, 0, -22, 96, -108)
+        val pps = byteArrayOf(0, 0, 0, 1, 104, -18, 60, -128)*/
     }
 }

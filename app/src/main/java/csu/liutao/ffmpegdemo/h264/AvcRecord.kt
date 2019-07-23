@@ -16,9 +16,10 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
 
     private val codecCallback = object : MediaCodec.Callback() {
         override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
+            if (!codecMgr.isCodec()) return
             val buffer = codec.getOutputBuffer(index)
             muxer.write(buffer, info, true)
-            codec.releaseOutputBuffer(index, false)
+            if (codecMgr.isCodec()) codec.releaseOutputBuffer(index, false)
         }
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
@@ -30,7 +31,7 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
             buffer.clear()
             val info = queue.take()
             buffer.put(info.bytes, info.offset, info.size)
-            codec.queueInputBuffer(index, info.offset, info.size, System.nanoTime() / 1000, MediaCodec.BUFFER_FLAG_KEY_FRAME)
+            if (codecMgr.isCodec()) codec.queueInputBuffer(index, info.offset, info.size, System.nanoTime() / 1000, MediaCodec.BUFFER_FLAG_KEY_FRAME)
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
