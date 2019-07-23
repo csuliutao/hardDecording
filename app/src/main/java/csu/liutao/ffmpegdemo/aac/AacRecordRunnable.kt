@@ -42,17 +42,6 @@ class AacRecordRunnable(var muxer: MuxerManger, queueSize : Int = 10) :MediaRunn
         }
     }
 
-    init {
-        val format = MediaFormat.createAudioFormat(MediaFormat.MIMETYPE_AUDIO_AAC,
-            44100, 2)
-        format.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC)
-        format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, audioRecord.getBufferSize())
-        format.setInteger(MediaFormat.KEY_BIT_RATE, 64000)
-        codecManager = CodecManager(format, codecCallback)
-        codecManager.start()
-        audioRecord.start()
-    }
-
     override fun run() {
         var length = -1
         while (audioRecord.isRecording()) {
@@ -70,5 +59,16 @@ class AacRecordRunnable(var muxer: MuxerManger, queueSize : Int = 10) :MediaRunn
 
     override fun release() {
         codecManager.release()
+    }
+
+    fun start() {
+        val format = MediaFormat.createAudioFormat(MediaFormat.MIMETYPE_AUDIO_AAC,
+            44100, 2)
+        format.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC)
+        format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, audioRecord.getBufferSize())
+        format.setInteger(MediaFormat.KEY_BIT_RATE, 64000)
+        codecManager = CodecManager(format, codecCallback)
+        codecManager.start()
+        audioRecord.start()
     }
 }

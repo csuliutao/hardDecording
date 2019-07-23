@@ -1,10 +1,7 @@
 package csu.liutao.ffmpegdemo.ativities
 
-import android.Manifest
 import android.content.pm.PackageManager
-import android.os.Build
 import android.os.Bundle
-import android.os.Handler
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -33,7 +30,7 @@ class AudioRecordsActivity : AppCompatActivity() {
         recyclerView.layoutManager = LinearLayoutManager(this)
         recyclerView.adapter = adapter
 
-        Utils.checkeAudioPermission(this)
+        Utils.checkAudioPermission(this)
 
         AudioRecordMgr.instance.callback = object :AudioRecordMgr.OnRecordSucess {
             override fun onSucess() {

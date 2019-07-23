@@ -43,7 +43,7 @@ class AudioTrackManager private constructor() {
     }
 
     private fun release() {
-        audioTrack!!.release()
+        audioTrack?.release()
         audioTrack = null
     }
 

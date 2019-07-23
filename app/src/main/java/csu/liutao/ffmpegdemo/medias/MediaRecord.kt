@@ -19,6 +19,7 @@ class MediaRecord(val path: String) {
     fun prepare(context : Context, surface: Surface, width : Int, height: Int) = avcRecord.prepare(context, surface, width, height)
 
     fun startRecord() {
+        aacRecord.start()
         Thread(aacRecord).start()
         avcRecord.start()
     }
