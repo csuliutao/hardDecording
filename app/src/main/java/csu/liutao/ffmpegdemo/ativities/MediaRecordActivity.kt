@@ -8,6 +8,7 @@ import android.view.TextureView
 import androidx.appcompat.app.AppCompatActivity
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.Utils
+import csu.liutao.ffmpegdemo.medias.CodecManager
 import csu.liutao.ffmpegdemo.medias.MediaMgr
 import csu.liutao.ffmpegdemo.medias.MediaRecord
 import java.io.File
@@ -27,6 +28,7 @@ class MediaRecordActivity : AppCompatActivity() {
         override fun onSurfaceTextureDestroyed(surface: SurfaceTexture?): Boolean =true
 
         override fun onSurfaceTextureAvailable(surface: SurfaceTexture?, width: Int, height: Int) {
+            CodecManager.start()
             curFile = MediaMgr.instance.getNewFile(false)
             mediaRecord = MediaRecord(curFile.canonicalPath)
             if (Utils.checkMediaPermission(this@MediaRecordActivity)) mediaRecord.prepare(this@MediaRecordActivity,
@@ -55,6 +57,7 @@ class MediaRecordActivity : AppCompatActivity() {
     override fun onDestroy() {
         super.onDestroy()
         if (!isStart) curFile.delete()
+        CodecManager.releaseThread()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {

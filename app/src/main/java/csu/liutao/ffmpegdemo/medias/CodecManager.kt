@@ -10,6 +10,9 @@ import android.view.Surface
 class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback, val surface: Surface? = null, val codeFlag : Int = MediaCodec.CONFIGURE_FLAG_ENCODE){
     private var codec : MediaCodec? = null
 
+    @Volatile
+    private var isStart = false
+
     fun start() {
         val type = format.getString(MediaFormat.KEY_MIME)
         if (codeFlag == 0) {
@@ -23,18 +26,23 @@ class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback, 
         } else {
             codec!!.setCallback(callback)
         }
+        isStart = true
         codec!!.start()
     }
+
+    fun isCodec() : Boolean = isStart
 
     fun getOutputFormat() : MediaFormat{
         return codec!!.outputFormat
     }
 
     fun stop() {
+        isStart = false
         codec?.stop()
     }
 
     fun release() {
+        isStart = false
         codec?.release()
         codec = null
     }

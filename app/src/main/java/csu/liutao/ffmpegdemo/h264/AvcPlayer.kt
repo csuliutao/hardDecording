@@ -22,6 +22,10 @@ class AvcPlayer (val path : String, queueSize : Int = 10){
         }
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
+            if (!codecMgr.isCodec()) {
+                queue.clear()
+                return
+            }
             val buffer = codec.getInputBuffer(index)
             buffer.clear()
             val info = ExtractorManager.Info()

@@ -12,15 +12,10 @@ class MediasActivity : VideosActivity(){
         isVideo = false
     }
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        CodecManager.start()
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         AudioTrackManager.release()
         AudioRecordManager.release()
-        CodecManager.releaseThread()
+
     }
 }

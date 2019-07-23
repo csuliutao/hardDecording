@@ -7,6 +7,10 @@ import android.media.MediaFormat
 import csu.liutao.ffmpegdemo.Utils
 import java.io.File
 import java.nio.ByteBuffer
+import android.opengl.ETC1.getHeight
+import android.opengl.ETC1.getWidth
+
+
 
 class VideoMgr private constructor(){
     private val PATH = "medias"
@@ -49,7 +53,45 @@ class VideoMgr private constructor(){
     }
 
     fun imageToNV21(image : Image) : ByteArray{
-        val plants = image.planes
+        val width = image.width
+        val height = image.height
+
+        val planes = image.planes
+        val result = ByteArray(width * height * 3 / 2)
+
+        var stride = planes[0].rowStride
+
+        if (stride == width) {
+            planes[0].buffer.get(result, 0, width * height)
+        } else {
+            for (row in 0 until height) {
+                planes[0].buffer.position(row * stride)
+                planes[0].buffer.get(result, row * width, width)
+            }
+        }
+
+        stride = planes[1].rowStride
+
+        val pixelStride = planes[1].pixelStride
+
+        val rowBytesCb = ByteArray(stride)
+        val rowBytesCr = ByteArray(stride)
+
+        for (row in 0 until height / (2 * pixelStride)) {
+            planes[1].buffer.position(row * stride)
+            planes[1].buffer.get(rowBytesCb)
+
+            planes[2].buffer.position(row * stride)
+            planes[2].buffer.get(rowBytesCr)
+
+            val rowOffset = width * height + row * width / 2
+            for (col in 0 until width / (2 * pixelStride)) {
+                result[rowOffset + col * 2] = rowBytesCr[col * pixelStride]
+                result[rowOffset + col * 2 + 1] = rowBytesCb[col * pixelStride]
+            }
+        }
+        return result
+        /*val plants = image.planes
         val size = plants.size
         if (size != 3) throw Exception("image data is wrong")
         val yBuffer = plants[0].buffer
@@ -64,7 +106,7 @@ class VideoMgr private constructor(){
         //nV21
         yBuffer.get(srcByte, 0, ySize)
         vBuffer.get(srcByte, ySize , vSize)
-        return srcByte
+        return srcByte*/
     }
 
 

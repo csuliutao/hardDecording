@@ -7,6 +7,7 @@ import android.view.TextureView
 import androidx.appcompat.app.AppCompatActivity
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.Utils
+import csu.liutao.ffmpegdemo.medias.CodecManager
 import csu.liutao.ffmpegdemo.medias.MediaPlayer
 import java.io.File
 
@@ -24,6 +25,7 @@ class MediaPlayerActivity : AppCompatActivity() {
         override fun onSurfaceTextureDestroyed(surface: SurfaceTexture?): Boolean = true
 
         override fun onSurfaceTextureAvailable(surface: SurfaceTexture?, width: Int, height: Int) {
+            CodecManager.start()
             mediaPlayer = MediaPlayer(file.canonicalPath)
             mediaPlayer.prapare(Surface(surface))
             mediaPlayer.play()
@@ -41,5 +43,10 @@ class MediaPlayerActivity : AppCompatActivity() {
             mediaPlayer.release()
             finish()
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        CodecManager.releaseThread()
     }
 }

@@ -36,6 +36,10 @@ class AacPlayer(val curFile : String, queueSize : Int = 10){
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
+            if (!codecManager.isCodec()) {
+                queue.clear()
+                return
+            }
             Utils.log(tag, "onOutputFormatChanged")
             val sampleSize = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
             val count = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
@@ -60,7 +64,6 @@ class AacPlayer(val curFile : String, queueSize : Int = 10){
     }
 
     fun stop() {
-        queue.clear()
         codecManager.stop()
         audioTrack.stop()
     }

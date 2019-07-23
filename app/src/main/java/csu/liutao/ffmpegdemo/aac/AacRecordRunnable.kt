@@ -24,6 +24,10 @@ class AacRecordRunnable(var muxer: MuxerManger, queueSize : Int = 10) :MediaRunn
         }
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
+            if (!codecManager.isCodec()) {
+                queue.clear()
+                return
+            }
             val buffer = codec.getInputBuffer(index)
             buffer.clear()
 
@@ -52,7 +56,6 @@ class AacRecordRunnable(var muxer: MuxerManger, queueSize : Int = 10) :MediaRunn
     }
 
     override fun stop() {
-        queue.clear()
         audioRecord.stop()
         codecManager.stop()
     }

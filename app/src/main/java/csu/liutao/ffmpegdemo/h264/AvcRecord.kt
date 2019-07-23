@@ -22,6 +22,10 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
         }
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
+            if (!codecMgr.isCodec()) {
+                queue.clear()
+                return
+            }
             val buffer = codec.getInputBuffer(index)
             buffer.clear()
             val info = queue.take()
@@ -66,7 +70,6 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
 
     fun stop() {
         cameraMgr.stop(true)
-        queue.clear()
         codecMgr.stop()
     }
 
