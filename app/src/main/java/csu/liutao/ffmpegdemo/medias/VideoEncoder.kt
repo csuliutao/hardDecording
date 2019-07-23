@@ -44,6 +44,7 @@ class VideoEncoder(val format: MediaFormat, val callback :Callback, val queueSiz
     }
 
     fun start() {
+        CodecManager.start()
         codecMgr = CodecManager(format, codecCallback)
         codecMgr.start()
     }

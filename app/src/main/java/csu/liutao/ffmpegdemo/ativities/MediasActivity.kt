@@ -1,5 +1,6 @@
 package csu.liutao.ffmpegdemo.ativities
 
+import android.os.Bundle
 import csu.liutao.ffmpegdemo.aac.AudioRecordManager
 import csu.liutao.ffmpegdemo.aac.AudioTrackManager
 import csu.liutao.ffmpegdemo.medias.CodecManager
@@ -9,6 +10,11 @@ class MediasActivity : VideosActivity(){
         recoderClass = MediaRecordActivity::class.java
         playerClass = MediaPlayerActivity::class.java
         isVideo = false
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        CodecManager.start()
     }
 
     override fun onDestroy() {

@@ -40,21 +40,25 @@ class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback, 
     }
 
     private fun getHandler(type : String) : Handler {
-        return if (type.startsWith("audio")) Handler(aacThread.looper) else Handler(avcThread.looper)
+        return if (type.startsWith("audio")) Handler(aacThread!!.looper) else Handler(avcThread!!.looper)
     }
 
     companion object {
-        private val aacThread = HandlerThread("aacThread")
-        private val avcThread = HandlerThread("avcThread")
+        private var aacThread : HandlerThread? = null
+        private var avcThread : HandlerThread? = null
 
-        init {
-            aacThread.start()
-            avcThread.start()
+        fun start() {
+            aacThread = HandlerThread("aacThread")
+            aacThread!!.start()
+            avcThread = HandlerThread("avcThread")
+            avcThread!!.start()
         }
 
         fun releaseThread() {
-            aacThread.quitSafely()
-            avcThread.quitSafely()
+            aacThread!!.quitSafely()
+            aacThread = null
+            avcThread!!.quitSafely()
+            avcThread == null
         }
     }
 }
