@@ -36,7 +36,8 @@ class MediaMgr private constructor(){
     }
 
     fun getNewFile(isVideo : Boolean = true): File{
-        return Utils.getNewFile(vedioDir, if(isVideo) H264 else MP4)
+        if (isVideo) return Utils.getNewFile(vedioDir, H264)
+        return Utils.getNewFile(mediaDir, MP4)
     }
 
     fun getH264CodecFromat(width : Int, height: Int) : MediaFormat {

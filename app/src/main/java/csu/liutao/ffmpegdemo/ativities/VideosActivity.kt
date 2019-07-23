@@ -22,6 +22,9 @@ open class VideosActivity : AppCompatActivity(){
 
     protected var playerClass: Class<*> = VideoPlayActivity::class.java
 
+    /**
+     * 是h264 还是h264+aac
+     */
     protected var isVideo = true
 
     override fun onCreate(savedInstanceState: Bundle?) {

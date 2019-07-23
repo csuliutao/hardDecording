@@ -1,9 +1,32 @@
 package csu.liutao.ffmpegdemo.medias
 
-class MediaPlayer(val path : String){
+import android.view.Surface
+import csu.liutao.ffmpegdemo.aac.AacPlayer
+import csu.liutao.ffmpegdemo.h264.AvcPlayer
 
-    fun prepare(){}
-    fun play(){}
-    fun pause(){}
-    fun release(){}
+class MediaPlayer(val path : String){
+    private lateinit var aacPlayer: AacPlayer
+    private lateinit var avcPlayer: AvcPlayer
+
+    init {
+        aacPlayer = AacPlayer(path)
+        avcPlayer = AvcPlayer(path)
+    }
+
+    fun prapare(surface: Surface) = avcPlayer.prepare(surface)
+
+    fun play(){
+        aacPlayer.start()
+        avcPlayer.start()
+    }
+
+    fun stop(){
+        aacPlayer.stop()
+        avcPlayer.stop()
+    }
+
+    fun release(){
+        aacPlayer.release()
+        avcPlayer.release()
+    }
 }

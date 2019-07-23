@@ -59,6 +59,5 @@ class Utils private constructor(){
             return true
         }
 
-
     }
 }

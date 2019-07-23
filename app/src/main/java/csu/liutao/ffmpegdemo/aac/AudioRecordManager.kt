@@ -1,4 +1,4 @@
-package csu.liutao.ffmpegdemo.h264
+package csu.liutao.ffmpegdemo.aac
 
 import android.media.AudioFormat
 import android.media.AudioRecord
@@ -31,6 +31,7 @@ class AudioRecordManager {
 
     fun read(bytes : ByteArray, offset : Int, length: Int) : Int {
         if (record == null) throw Exception("audio record no init")
+        if (!isRecording()) return -1
         return record!!.read(bytes, offset, length)
     }
 
