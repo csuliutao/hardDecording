@@ -16,6 +16,8 @@ class MediaMgr private constructor(){
     private val MP4 = ".mp4"
     private lateinit var mediaDir :String
 
+    val FILE_PATH = "file_path"
+
     fun initDir(context : Context, isVideo : Boolean = true) {
         val dir : File
         if (isVideo) {
@@ -56,6 +58,20 @@ class MediaMgr private constructor(){
         if (count == 2) return AudioFormat.CHANNEL_IN_STEREO
         return AudioFormat.CHANNEL_IN_STEREO
 
+    }
+
+    fun saveRecordFile(file : File) : Boolean {
+        if (!file.exists()) return false
+        if (file.length() <= 0) {
+            file.delete()
+            return false
+        }
+        return true
+    }
+
+    fun saveRecordFile(path : String) : Boolean {
+        val file = File(path)
+        return saveRecordFile(file)
     }
 
     companion object{

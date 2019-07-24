@@ -21,6 +21,7 @@ class AudioTrackMgr private constructor(){
 
     private val listener = object : CodecOutputListener {
         override fun output(byteBuf: ByteBuffer, bufferInfo: MediaCodec.BufferInfo) {
+            if (audioTrack == null) return
             val byte = ByteArray(bufferInfo.size)
             byteBuf.get(byte, bufferInfo.offset, bufferInfo.size)
             audioTrack!!.write(byte, 0, byte.size)

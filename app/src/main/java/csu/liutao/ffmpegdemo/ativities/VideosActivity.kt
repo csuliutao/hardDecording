@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import csu.liutao.ffmpegdemo.R
+import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.adapters.MediasAdapter
 import csu.liutao.ffmpegdemo.medias.MediaMgr
 
@@ -27,6 +28,8 @@ open class VideosActivity : AppCompatActivity(){
      */
     protected var isVideo = true
 
+    protected val code = 10
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_medias)
@@ -45,11 +48,20 @@ open class VideosActivity : AppCompatActivity(){
     }
 
     private fun onClick() {
-        startActivity(Intent(this, recoderClass))
+        startActivityForResult(Intent(this, recoderClass), code)
+//        startActivity(Intent(this, recoderClass))
     }
 
-    override fun onResume() {
-        super.onResume()
-        adpter.updateView()
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        Utils.log("onActivityResult")
+        val file = data?.getStringExtra(MediaMgr.instance.FILE_PATH)
+        if (file == null) return
+        if (requestCode == code) {
+            if (MediaMgr.instance.saveRecordFile(file)){
+                Utils.log("onActivityResult saveFile")
+                adpter.updateView()
+            }
+        }
     }
 }

@@ -1,5 +1,7 @@
 package csu.liutao.ffmpegdemo.ativities
 
+import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.SurfaceTexture
 import android.media.Image
@@ -14,6 +16,7 @@ import androidx.appcompat.app.AppCompatActivity
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.medias.*
+import java.io.File
 import java.nio.ByteBuffer
 
 class VideoRecordActivity : AppCompatActivity (){
@@ -25,6 +28,8 @@ class VideoRecordActivity : AppCompatActivity (){
     private var encoder : VideoEncoder? = null
 
     private var muxer : MediaMuxer? = null
+
+    private var curFile : File? = null
 
     private var trackId = -1
     val imageListener = object : Camera2Mgr.ImageListener {
@@ -93,12 +98,12 @@ class VideoRecordActivity : AppCompatActivity (){
 
     private fun initCodec() {
         val format = MediaMgr.instance.getH264CodecFromat(textureView.width, textureView.height)
-        val curFile = MediaMgr.instance.getNewFile()
+        curFile = MediaMgr.instance.getNewFile()
 
         encoder = VideoEncoder(format, codecCallback)
         encoder!!.start()
 
-        muxer = MediaMuxer(curFile.canonicalPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
+        muxer = MediaMuxer(curFile!!.canonicalPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4)
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -113,6 +118,12 @@ class VideoRecordActivity : AppCompatActivity (){
 
     override fun onDestroy() {
         super.onDestroy()
+        if (curFile != null) {
+            Utils.log("setResult")
+            val intent = Intent()
+            intent.putExtra(MediaMgr.instance.FILE_PATH, curFile?.canonicalFile)
+            setResult(Activity.RESULT_OK, intent)
+        }
         camera2Mgr.release()
         encoder?.release()
         VideoEncoder.releaseThread()

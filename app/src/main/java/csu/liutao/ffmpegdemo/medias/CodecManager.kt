@@ -63,9 +63,9 @@ class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback, 
         }
 
         fun releaseThread() {
-            aacThread!!.quitSafely()
+            aacThread?.quitSafely()
             aacThread = null
-            avcThread!!.quitSafely()
+            avcThread?.quitSafely()
             avcThread == null
         }
     }

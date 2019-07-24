@@ -11,6 +11,7 @@ import csu.liutao.ffmpegdemo.audios.AudioMgr
 import csu.liutao.ffmpegdemo.adapters.RecordAdapter
 import csu.liutao.ffmpegdemo.audios.AudioRecordMgr
 import csu.liutao.ffmpegdemo.audios.AudioTrackMgr
+import csu.liutao.ffmpegdemo.medias.MediaMgr
 
 class AudioRecordsActivity : AppCompatActivity() {
 
@@ -33,7 +34,8 @@ class AudioRecordsActivity : AppCompatActivity() {
         Utils.checkAudioPermission(this)
 
         AudioRecordMgr.instance.callback = object :AudioRecordMgr.OnRecordSucess {
-            override fun onSucess() {
+            override fun onSucess(path : String) {
+                if (!MediaMgr.instance.saveRecordFile(path)) return
                 runOnUiThread {
                     adapter.updateData(AudioMgr.mgr.getFiles())
                 }

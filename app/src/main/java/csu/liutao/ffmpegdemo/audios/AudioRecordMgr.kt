@@ -4,14 +4,13 @@ import android.media.AudioRecord
 import android.media.MediaCodec
 import android.media.MediaFormat
 import csu.liutao.ffmpegdemo.Utils
+import java.io.File
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.util.concurrent.Executors
 
 class AudioRecordMgr private constructor(){
     var curState = RecordState.RELEASE
-
-    private val exector = Executors.newSingleThreadExecutor()
 
     private val runnable = object : Runnable{
         override fun run() {
@@ -41,6 +40,8 @@ class AudioRecordMgr private constructor(){
     private lateinit var encodeMgr : AudioEncoder
 
     private var headerByte = ByteArray(7)
+
+    private lateinit var file : File
 
     private val listener = object : CodecOutputListener {
         override fun output(byteBuf: ByteBuffer, bufferInfo: MediaCodec.BufferInfo) {
@@ -86,11 +87,11 @@ class AudioRecordMgr private constructor(){
         if (!isRecording) {
             isRecording = true
             audioRecord!!.startRecording()
-            val file = Utils.getNewFile(AudioMgr.mgr.getRecordDir(), AudioMgr.END_TAG)
+            file = Utils.getNewFile(AudioMgr.mgr.getRecordDir(), AudioMgr.END_TAG)
 
             fos = FileOutputStream(file)
 
-            exector.submit(runnable)
+            Thread(runnable).start()
         }
     }
 
@@ -108,18 +109,17 @@ class AudioRecordMgr private constructor(){
         curState = RecordState.PAUSE
         isRecording = false
         audioRecord!!.stop()
-        AudioRecordMgr.instance.callback.onSucess()
+        AudioRecordMgr.instance.callback.onSucess(file.canonicalPath)
     }
 
     fun release() {
-        exector.shutdown()
         encodeMgr.release()
         audioRecord?.release()
         audioRecord = null
     }
 
     interface OnRecordSucess {
-        fun onSucess()
+        fun onSucess(path : String)
     }
 
 
