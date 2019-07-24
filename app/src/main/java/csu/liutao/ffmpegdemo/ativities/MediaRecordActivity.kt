@@ -1,5 +1,7 @@
 package csu.liutao.ffmpegdemo.ativities
 
+import android.app.Activity
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.SurfaceTexture
 import android.os.Bundle
@@ -18,7 +20,7 @@ class MediaRecordActivity : AppCompatActivity() {
     private lateinit var textureView: TextureView
     private var isStart = false
 
-    private lateinit var curFile : File
+    private var curFile : File? = null
 
     private val callback = object : TextureView.SurfaceTextureListener {
         override fun onSurfaceTextureSizeChanged(surface: SurfaceTexture?, width: Int, height: Int) = Unit
@@ -30,7 +32,7 @@ class MediaRecordActivity : AppCompatActivity() {
         override fun onSurfaceTextureAvailable(surface: SurfaceTexture?, width: Int, height: Int) {
             CodecManager.start()
             curFile = MediaMgr.instance.getNewFile(false)
-            mediaRecord = MediaRecord(curFile.canonicalPath)
+            mediaRecord = MediaRecord(curFile!!.canonicalPath)
             if (Utils.checkMediaPermission(this@MediaRecordActivity)) mediaRecord.prepare(this@MediaRecordActivity,
                 Surface(surface), width, height
             )
@@ -54,8 +56,13 @@ class MediaRecordActivity : AppCompatActivity() {
     }
 
     override fun onDestroy() {
-        if (!isStart) curFile.delete()
         super.onDestroy()
+        if (curFile != null) {
+            Utils.log("media setResult")
+            val intent = Intent()
+            intent.putExtra(MediaMgr.instance.FILE_PATH, curFile!!.canonicalFile)
+            setResult(Activity.RESULT_OK, intent)
+        }
         mediaRecord.release()
         CodecManager.releaseThread()
     }

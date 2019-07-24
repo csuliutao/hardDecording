@@ -49,9 +49,6 @@ class MediaPlayerActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        val intent = Intent()
-        intent.putExtra(MediaMgr.instance.FILE_PATH, file.canonicalFile)
-        setResult(Activity.RESULT_OK, intent)
         mediaPlayer.release()
         CodecManager.releaseThread()
     }

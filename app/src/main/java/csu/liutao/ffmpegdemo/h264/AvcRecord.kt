@@ -21,7 +21,7 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
             if (!codecMgr.isCodec()) return
             val buffer = codec.getOutputBuffer(index)
             muxer.write(buffer, info, true)
-            if (codecMgr.isCodec()) codec.releaseOutputBuffer(index, false)
+            if (codecMgr != null && codecMgr.isCodec()) codec.releaseOutputBuffer(index, false)
         }
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
