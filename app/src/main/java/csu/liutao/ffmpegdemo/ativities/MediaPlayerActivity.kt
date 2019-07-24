@@ -47,6 +47,11 @@ class MediaPlayerActivity : AppCompatActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        mediaPlayer.stop()
+        super.onBackPressed()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         mediaPlayer.release()

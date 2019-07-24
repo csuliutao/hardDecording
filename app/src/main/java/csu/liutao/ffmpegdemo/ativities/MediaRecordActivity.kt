@@ -55,6 +55,11 @@ class MediaRecordActivity : AppCompatActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        mediaRecord.saveRecord()
+        super.onBackPressed()
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         mediaRecord.release()
