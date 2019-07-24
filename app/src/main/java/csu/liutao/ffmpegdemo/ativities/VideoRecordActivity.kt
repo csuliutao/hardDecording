@@ -118,12 +118,6 @@ class VideoRecordActivity : AppCompatActivity (){
 
     override fun onDestroy() {
         super.onDestroy()
-        if (curFile != null) {
-            Utils.log("video setResult")
-            val intent = Intent()
-            intent.putExtra(MediaMgr.instance.FILE_PATH, curFile?.canonicalFile)
-            setResult(Activity.RESULT_OK, intent)
-        }
         camera2Mgr.release()
         encoder?.release()
         VideoEncoder.releaseThread()

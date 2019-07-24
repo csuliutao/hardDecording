@@ -26,12 +26,16 @@ class MediasAdapter(var context : Context, val isVideo : Boolean = true) : Recyc
 
     private fun refreshData() : Boolean {
         val files = MediaMgr.instance.getAllFiles(isVideo)
-        if (files.size != medias.size) {
-            medias.clear()
-            medias.addAll(files)
-            return true
+        if (files.size == medias.size) return false
+        var flag = false
+        for (file in files) {
+            if (medias.contains(file)) continue
+            if (MediaMgr.instance.saveRecordFile(file)) {
+                medias.add(file)
+                flag = true
+            }
         }
-        return false
+        return flag
     }
 
     fun updateView () {

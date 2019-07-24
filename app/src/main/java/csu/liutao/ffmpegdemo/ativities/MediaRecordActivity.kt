@@ -57,12 +57,6 @@ class MediaRecordActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        if (curFile != null) {
-            Utils.log("media setResult")
-            val intent = Intent()
-            intent.putExtra(MediaMgr.instance.FILE_PATH, curFile!!.canonicalFile)
-            setResult(Activity.RESULT_OK, intent)
-        }
         mediaRecord.release()
         CodecManager.releaseThread()
     }
