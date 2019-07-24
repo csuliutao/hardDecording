@@ -48,7 +48,6 @@ class MediaRecordActivity : AppCompatActivity() {
                 mediaRecord.startRecord()
             } else {
                 mediaRecord.saveRecord()
-                mediaRecord.release()
                 finish()
             }
         }
@@ -57,6 +56,7 @@ class MediaRecordActivity : AppCompatActivity() {
     override fun onDestroy() {
         if (!isStart) curFile.delete()
         super.onDestroy()
+        mediaRecord.release()
         CodecManager.releaseThread()
     }
 

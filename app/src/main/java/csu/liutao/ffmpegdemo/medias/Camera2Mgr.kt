@@ -27,6 +27,7 @@ class Camera2Mgr private constructor() {
 
     private var isForPicture : Boolean = true
 
+    @Volatile
     private var isStop = false
 
     private lateinit var previewSurface : Surface
@@ -62,7 +63,7 @@ class Camera2Mgr private constructor() {
 
     private val imageAvailableListener = object : ImageReader.OnImageAvailableListener{
         override fun onImageAvailable(reader: ImageReader?) {
-            if (reader == null) return
+            if (reader == null || isStop) return
             val image = reader!!.acquireNextImage()
             imageListener?.handleImage(image)
             image!!.close()
@@ -125,7 +126,7 @@ class Camera2Mgr private constructor() {
         imageReader?.close()
         imageReader = null
         cameraSession?.close()
-        cameraSession == null
+        cameraSession = null
         subThread.quitSafely()
     }
 

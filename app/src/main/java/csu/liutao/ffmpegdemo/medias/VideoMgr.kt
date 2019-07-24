@@ -6,10 +6,8 @@ import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import csu.liutao.ffmpegdemo.Utils
 import java.io.File
-import java.nio.ByteBuffer
-import android.opengl.ETC1.getHeight
-import android.opengl.ETC1.getWidth
 import java.lang.Math.min
+import java.nio.ByteBuffer
 
 
 class VideoMgr private constructor(){
@@ -49,44 +47,48 @@ class VideoMgr private constructor(){
     fun imageToNV21(image : Image) : ByteArray{
         val width = image.width
         val height = image.height
-        val result = ByteArray(width * height * 3 / 2)
+        val ySize = width * height
+        val uvSize = width * height / 4
 
-        val yPlant = image.planes[0]
-        val yWidth = min(yPlant.rowStride, width)
+        val nv21 = ByteArray(ySize + uvSize * 2)
 
-        val planes = image.planes
+        val yBuffer = image.planes[0].buffer
+        val uBuffer = image.planes[1].buffer
+        val vBuffer = image.planes[2].buffer
 
-        for(row in 0 until height) {
-            yPlant.buffer.position(row * yWidth)
-            yPlant.buffer.get(result,row * yWidth, yWidth)
-        }
 
-        var ySize = yWidth * height
+        val yRemaining = yBuffer.remaining()
+        var pos = 0
 
-        val uPlane = image.planes[1]
-        val vPlane = image.planes[2]
+        pos = min(yRemaining, ySize)
+        yBuffer.get(nv21, 0, pos)
 
-        val uvStride = min(uPlane.rowStride, yWidth)
-        val uvPixel = uPlane.pixelStride
+        val uvPix = image.planes[2].pixelStride
+        val uvRemaing = vBuffer.remaining()
 
-        val rowBytesCb = ByteArray(uvStride)
-        val rowBytesCr = ByteArray(uvStride)
+        if (uvPix == 2) {
+            val length = min(uvSize * 2, uvRemaing)
+            val uBytes = ByteArray(length)
+            uBuffer.get(uBytes)
+            val vBytes = ByteArray(length)
+            vBuffer.get(vBytes)
 
-        for (row in 0 until height / uvPixel) {
-            uPlane.buffer.position(row * uvStride)
-            uPlane.buffer.get(rowBytesCb)
-
-            vPlane.buffer.position(row * uvStride)
-            vPlane.buffer.get(rowBytesCr)
-
-            val offset = ySize + row * uvStride / uvPixel
-            for (col in 0 until uvStride / uvPixel) {
-                result[offset + col * 2] = rowBytesCb[col * uvPixel]
-                result[offset + col * 2 + 1] = rowBytesCr[col * uvPixel]
+            val uOffset = height / 2 + pos
+            for (num in 0 until height / 2) {
+                nv21[pos + num] = vBytes[num * 2]
+                nv21[uOffset + num] = uBytes[num * 2]
             }
-        }
 
-        return result
+            pos += length
+        } else {// uvPix =1
+            val length = min(uvSize, uvRemaing)
+            vBuffer.get(nv21, pos, length)
+            pos += length
+            uBuffer.get(nv21, pos, length)
+            pos += length
+        }
+        Utils.log("real size ="+ pos + ",need size ="+ nv21.size)
+        return nv21
     }
 
 

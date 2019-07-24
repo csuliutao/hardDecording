@@ -3,10 +3,11 @@ package csu.liutao.ffmpegdemo.medias
 import android.media.MediaCodec
 import android.media.MediaFormat
 import android.media.MediaMuxer
+import android.os.Handler
+import android.os.Looper
 import csu.liutao.ffmpegdemo.Utils
 import java.nio.ByteBuffer
 import java.util.concurrent.LinkedBlockingDeque
-import java.util.concurrent.locks.ReentrantLock
 
 class MuxerManger (val path:String, val format : Int = MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4){
     private var muxer : MediaMuxer? = null
@@ -14,12 +15,19 @@ class MuxerManger (val path:String, val format : Int = MediaMuxer.OutputFormat.M
     private var audioTrack = -1
     private var queue = LinkedBlockingDeque<Info>(10)
 
+    @Volatile
+    private var isStarted = false
+
     private var runnable = object : Runnable {
         override fun run() {
             val bufferInfo = MediaCodec.BufferInfo()
             var trackId = videoTrack
-            while (muxer != null) {
-                val infos = queue.take()
+            while (isStarted || muxer == null) {
+                val infos = queue.poll()
+                if (null == infos) {
+                    Thread.sleep(50)
+                    continue
+                }
                 bufferInfo.set(0, infos.bytes.size, infos.time, infos.flag)
                 trackId = if(infos.isVedio) videoTrack else audioTrack
                 muxer!!.writeSampleData(trackId, ByteBuffer.wrap(infos.bytes), bufferInfo)
@@ -33,18 +41,20 @@ class MuxerManger (val path:String, val format : Int = MediaMuxer.OutputFormat.M
 
     fun start() {
         if (isReadyStart()) {
+            isStarted = true
             muxer?.start()
             Thread(runnable).start()
         }
     }
 
     fun release() {
+        queue.clear()
         muxer?.release()
         muxer = null
     }
 
     fun stop() {
-        muxer?.stop()
+        isStarted = false
     }
 
     private fun isReadyStart() :Boolean {
@@ -58,6 +68,7 @@ class MuxerManger (val path:String, val format : Int = MediaMuxer.OutputFormat.M
     }
 
     fun write(buffer: ByteBuffer, info : MediaCodec.BufferInfo, isVedio: Boolean = true) {
+        if (!isStarted) return
         Utils.log("muxer", "isVedio = "+ isVedio+ ",time =" + info.presentationTimeUs)
         val bytes = ByteArray(info.size)
         buffer.get(bytes, info.offset, info.size)
