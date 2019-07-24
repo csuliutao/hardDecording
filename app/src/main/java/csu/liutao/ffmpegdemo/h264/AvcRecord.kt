@@ -14,6 +14,8 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
     private lateinit var codecMgr : CodecManager
     private lateinit var queue : LinkedBlockingDeque<MediaInfo>
 
+    private var flag = MediaCodec.BUFFER_FLAG_CODEC_CONFIG
+
     private val codecCallback = object : MediaCodec.Callback() {
         override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
             if (!codecMgr.isCodec()) return
@@ -32,7 +34,8 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
             val info = queue.take()
             buffer.put(info.bytes, info.offset, info.size)
             muxer.setStartTime()
-            if (codecMgr.isCodec()) codec.queueInputBuffer(index, info.offset, info.size, System.nanoTime() / 1000 - muxer.getStartTime(), MediaCodec.BUFFER_FLAG_KEY_FRAME)
+            if (codecMgr.isCodec()) codec.queueInputBuffer(index, info.offset, info.size, System.nanoTime() / 1000 - muxer.getStartTime(), flag)
+            if (flag == MediaCodec.BUFFER_FLAG_CODEC_CONFIG) flag = MediaCodec.BUFFER_FLAG_KEY_FRAME
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
@@ -65,7 +68,7 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
         format.setInteger(MediaFormat.KEY_FRAME_RATE, 25)
         format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
-//        format.setInteger(MediaFormat.KEY_ROTATION, 90)
+        format.setInteger(MediaFormat.KEY_ROTATION, 90)
         codecMgr = CodecManager(format, codecCallback)
     }
 
