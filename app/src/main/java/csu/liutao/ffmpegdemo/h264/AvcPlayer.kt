@@ -1,5 +1,6 @@
 package csu.liutao.ffmpegdemo.h264
 
+import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaFormat
 import android.view.Surface
@@ -44,8 +45,12 @@ class AvcPlayer (val path : String, queueSize : Int = 10){
         extractorMgr = ExtractorManager(path, MediaFormat.MIMETYPE_VIDEO_AVC)
     }
 
-    fun prepare(surface: Surface) {
-        codecMgr = CodecManager(extractorMgr.getExtractorFormat(),callback ,surface, 0)
+    fun prepare(surface: SurfaceTexture) {
+        val format = extractorMgr.getExtractorFormat()
+        val width = format.getInteger(MediaFormat.KEY_WIDTH)
+        val height = format.getInteger(MediaFormat.KEY_HEIGHT)
+        surface.setDefaultBufferSize(width, height)
+        codecMgr = CodecManager(format,callback ,Surface(surface), 0)
     }
 
     fun start() {

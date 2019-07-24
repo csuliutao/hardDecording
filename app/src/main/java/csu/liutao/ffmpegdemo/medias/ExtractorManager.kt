@@ -9,6 +9,8 @@ class ExtractorManager(val path : String, val mineType :String = MediaFormat.MIM
     private lateinit var format: MediaFormat
     private var isStarted = true
 
+    private val sync = StampSync()
+
     init {
         extractor.setDataSource(path)
         var count = extractor.trackCount
@@ -47,6 +49,7 @@ class ExtractorManager(val path : String, val mineType :String = MediaFormat.MIM
         if (!isStarted) return if (size < 0) -1 else -2
         info.flag = extractor.sampleFlags
         info.time = extractor.sampleTime
+        sync.waitTime(info.time / 1000)
         if (size > 0) extractor.advance()
         return size
     }

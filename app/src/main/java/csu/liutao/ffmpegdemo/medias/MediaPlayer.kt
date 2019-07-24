@@ -1,6 +1,6 @@
 package csu.liutao.ffmpegdemo.medias
 
-import android.view.Surface
+import android.graphics.SurfaceTexture
 import csu.liutao.ffmpegdemo.aac.AacPlayer
 import csu.liutao.ffmpegdemo.h264.AvcPlayer
 
@@ -13,7 +13,7 @@ class MediaPlayer(val path : String){
         avcPlayer = AvcPlayer(path)
     }
 
-    fun prapare(surface: Surface) = avcPlayer.prepare(surface)
+    fun prapare(surface: SurfaceTexture) = avcPlayer.prepare(surface)
 
     fun play(){
         aacPlayer.start()

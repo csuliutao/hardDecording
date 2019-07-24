@@ -27,7 +27,7 @@ class MediaPlayerActivity : AppCompatActivity() {
         override fun onSurfaceTextureAvailable(surface: SurfaceTexture?, width: Int, height: Int) {
             CodecManager.start()
             mediaPlayer = MediaPlayer(file.canonicalPath)
-            mediaPlayer.prapare(Surface(surface))
+            mediaPlayer.prapare(textureView.surfaceTexture)
             mediaPlayer.play()
         }
     }
