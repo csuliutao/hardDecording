@@ -16,6 +16,9 @@ class MuxerManger (val path:String, val format : Int = MediaMuxer.OutputFormat.M
     private var queue = LinkedBlockingDeque<Info>(10)
 
     @Volatile
+    private var startTime = -1L
+
+    @Volatile
     private var isStarted = false
 
     private var runnable = object : Runnable {
@@ -39,8 +42,15 @@ class MuxerManger (val path:String, val format : Int = MediaMuxer.OutputFormat.M
         muxer = MediaMuxer(path, format)
     }
 
+    fun getStartTime() : Long = startTime
+
+    fun setStartTime() {
+        if (startTime == -1L) startTime = System.nanoTime() / 1000
+    }
+
     fun start() {
         if (isReadyStart()) {
+            setStartTime()
             isStarted = true
             muxer?.start()
             Thread(runnable).start()

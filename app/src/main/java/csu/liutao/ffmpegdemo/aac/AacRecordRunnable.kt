@@ -34,7 +34,8 @@ class AacRecordRunnable(var muxer: MuxerManger, queueSize : Int = 10) :MediaRunn
 
             val info = queue.take()
             buffer.put(info.bytes, info.offset, info.size)
-            if (codecManager.isCodec()) codec.queueInputBuffer(index, info.offset, info.size, System.nanoTime() / 1000, 0)
+            muxer.setStartTime()
+            if (codecManager.isCodec()) codec.queueInputBuffer(index, info.offset, info.size, System.nanoTime() / 1000 - muxer.getStartTime(), 0)
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
