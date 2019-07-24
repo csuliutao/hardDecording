@@ -7,8 +7,6 @@ import android.media.MediaFormat
 import csu.liutao.ffmpegdemo.Utils
 import java.io.File
 import java.lang.Math.min
-import java.lang.StringBuilder
-import java.nio.ByteBuffer
 
 
 class VideoMgr private constructor(){
@@ -56,19 +54,13 @@ class VideoMgr private constructor(){
         var curPos = 0
 
         val yplane = image.planes[0]
+        val uplane = image.planes[1]
         val vplane = image.planes[2]
 
         val yremaing = yplane.buffer.remaining()
         if (ySize == yremaing) {
             curPos = ySize
             yplane.buffer.get(nv21, 0, curPos)
-
-            vplane.buffer.get(nv21, curPos, uvSize)
-            curPos += uvSize
-
-            val uplane = image.planes[1]
-            uplane.buffer.get(nv21, curPos, uvSize)
-            curPos += uvSize
 
         } else {
             val yStide = yplane.rowStride
@@ -83,7 +75,15 @@ class VideoMgr private constructor(){
             }
 
             Utils.log("y real size ="+ ySize + ", size =" + curPos)
+        }
 
+        if (uplane.pixelStride == 1) {
+            vplane.buffer.get(nv21, curPos, uvSize)
+            curPos += uvSize
+
+            uplane.buffer.get(nv21, curPos, uvSize)
+            curPos += uvSize
+        } else {
             val uvRemaing = vplane.buffer.remaining()
             val uvStride = vplane.rowStride
 
@@ -97,6 +97,7 @@ class VideoMgr private constructor(){
                 curPos += curWidth
             }
         }
+
 
         Utils.log("real size ="+ size +", curPos = "+ curPos)
 
