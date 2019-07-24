@@ -11,24 +11,24 @@ import java.util.concurrent.LinkedBlockingDeque
 
 class AacPlayer(val curFile : String, queueSize : Int = 10){
     private val tag = "AacPlayer"
-    private lateinit var codecManager: CodecManager
+    private var codecManager: CodecManager? = null
     private val queue = LinkedBlockingDeque<MediaInfo>(queueSize)
     private val audioTrack = AudioTrackManager.instance
     private lateinit var extractor : ExtractorManager
 
     private val callback = object : MediaCodec.Callback() {
         override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
-            if (!codecManager.isCodec()) return
+            if (!codecManager!!.isCodec()) return
             Utils.log(tag, "output size ="+ info.size)
             val buffer = codec.getOutputBuffer(index)
             val bytes = ByteArray(info.size)
             buffer.get(bytes, info.offset, info.size)
             audioTrack.write(bytes, 0, info.size)
-            if (codecManager.isCodec()) codec.releaseOutputBuffer(index, false)
+            if (codecManager!!.isCodec()) codec.releaseOutputBuffer(index, false)
         }
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
-            if (!codecManager.isCodec()) {
+            if (!codecManager!!.isCodec()) {
                 queue.clear()
                 return
             }
@@ -37,11 +37,11 @@ class AacPlayer(val curFile : String, queueSize : Int = 10){
             val info = ExtractorManager.Info()
             val length = extractor.read(buffer, info)
             Utils.log(tag, "input length="+ length)
-            if (length > 0 && codecManager.isCodec()) codec.queueInputBuffer(index, 0, length, info.time, info.flag)
+            if (length > 0 && codecManager!!.isCodec()) codec.queueInputBuffer(index, 0, length, info.time, info.flag)
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
-            if (!codecManager.isCodec()) return
+            if (!codecManager!!.isCodec()) return
             Utils.log(tag, "onOutputFormatChanged")
             val sampleSize = format.getInteger(MediaFormat.KEY_SAMPLE_RATE)
             val count = format.getInteger(MediaFormat.KEY_CHANNEL_COUNT)
@@ -62,15 +62,15 @@ class AacPlayer(val curFile : String, queueSize : Int = 10){
     }
 
     fun start() {
-        codecManager.start()
+        codecManager!!.start()
     }
 
     fun stop() {
-        codecManager.stop()
+        codecManager?.stop()
         audioTrack.stop()
     }
 
     fun release() {
-        codecManager.release()
+        codecManager?.release()
     }
 }

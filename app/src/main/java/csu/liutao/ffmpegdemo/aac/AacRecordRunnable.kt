@@ -12,20 +12,20 @@ import java.util.concurrent.LinkedBlockingDeque
 
 class AacRecordRunnable(var muxer: MuxerManger, queueSize : Int = 10) :MediaRunnable {
     private val tag = "AacRecordRunnable"
-    private lateinit var codecManager: CodecManager
+    private var codecManager: CodecManager? = null
     private val queue = LinkedBlockingDeque<MediaInfo>(queueSize)
     private val audioRecord = AudioRecordManager.instance
 
     private val codecCallback = object : MediaCodec.Callback() {
         override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
-            if (!codecManager.isCodec()) return
+            if (!codecManager!!.isCodec()) return
             val buffer = codec.getOutputBuffer(index)
             muxer.write(buffer, info, false)
             codec.releaseOutputBuffer(index, false)
         }
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
-            if (!codecManager.isCodec()) {
+            if (!codecManager!!.isCodec()) {
                 queue.clear()
                 return
             }
@@ -35,7 +35,7 @@ class AacRecordRunnable(var muxer: MuxerManger, queueSize : Int = 10) :MediaRunn
             val info = queue.take()
             buffer.put(info.bytes, info.offset, info.size)
             muxer.setStartTime()
-            if (codecManager.isCodec()) codec.queueInputBuffer(index, info.offset, info.size, System.nanoTime() / 1000 - muxer.getStartTime(), 0)
+            if (codecManager!!.isCodec()) codec.queueInputBuffer(index, info.offset, info.size, System.nanoTime() / 1000 - muxer.getStartTime(), 0)
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
@@ -59,11 +59,11 @@ class AacRecordRunnable(var muxer: MuxerManger, queueSize : Int = 10) :MediaRunn
 
     override fun stop() {
         audioRecord.stop()
-        codecManager.stop()
+        codecManager?.stop()
     }
 
     override fun release() {
-        codecManager.release()
+        codecManager?.release()
     }
 
     fun start() {
@@ -73,7 +73,7 @@ class AacRecordRunnable(var muxer: MuxerManger, queueSize : Int = 10) :MediaRunn
         format.setInteger(MediaFormat.KEY_MAX_INPUT_SIZE, audioRecord.getBufferSize())
         format.setInteger(MediaFormat.KEY_BIT_RATE, 64000)
         codecManager = CodecManager(format, codecCallback)
-        codecManager.start()
+        codecManager!!.start()
         audioRecord.start()
     }
 }

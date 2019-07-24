@@ -13,17 +13,17 @@ import java.util.concurrent.LinkedBlockingDeque
 class AvcPlayer (val path : String, queueSize : Int = 10){
     private val tag = "AvcPlayer"
     private lateinit var extractorMgr: ExtractorManager
-    private lateinit var codecMgr : CodecManager
+    private var codecMgr : CodecManager? = null
     private lateinit var queue : LinkedBlockingDeque<MediaInfo>
 
     private val callback = object : MediaCodec.Callback(){
         override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
             Utils.log(tag, "output length="+ info.size)
-            if (codecMgr.isCodec()) codec.releaseOutputBuffer(index, true)
+            if (codecMgr!!.isCodec()) codec.releaseOutputBuffer(index, true)
         }
 
         override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
-            if (!codecMgr.isCodec()) {
+            if (!codecMgr!!.isCodec()) {
                 queue.clear()
                 return
             }
@@ -32,7 +32,7 @@ class AvcPlayer (val path : String, queueSize : Int = 10){
             val info = ExtractorManager.Info()
             val length = extractorMgr.read(buffer, info)
             Utils.log(tag, "input length="+ length)
-            if (length > 0 && codecMgr.isCodec()) codec.queueInputBuffer(index, 0, length, info.time, info.flag)
+            if (length > 0 && codecMgr!!.isCodec()) codec.queueInputBuffer(index, 0, length, info.time, info.flag)
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) = Unit
@@ -54,14 +54,14 @@ class AvcPlayer (val path : String, queueSize : Int = 10){
     }
 
     fun start() {
-        codecMgr.start()
+        codecMgr!!.start()
     }
 
     fun stop() {
-        codecMgr.stop()
+        codecMgr?.stop()
     }
 
     fun release() {
-        codecMgr.release()
+        codecMgr?.release()
     }
 }
