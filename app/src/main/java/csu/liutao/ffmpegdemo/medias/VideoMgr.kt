@@ -7,6 +7,7 @@ import android.media.MediaFormat
 import csu.liutao.ffmpegdemo.Utils
 import java.io.File
 import java.lang.Math.min
+import java.lang.StringBuilder
 import java.nio.ByteBuffer
 
 
@@ -47,47 +48,58 @@ class VideoMgr private constructor(){
     fun imageToNV21(image : Image) : ByteArray{
         val width = image.width
         val height = image.height
-        val ySize = width * height
+        Utils.log("width ="+ width+",height = "+ height)
         val uvSize = width * height / 4
+        val ySize = width * height
+        val size = ySize + uvSize * 2
+        val nv21 = ByteArray(size)
+        var curPos = 0
 
-        val nv21 = ByteArray(ySize + uvSize * 2)
+        val yplane = image.planes[0]
+        val vplane = image.planes[2]
 
-        val yBuffer = image.planes[0].buffer
-        val uBuffer = image.planes[1].buffer
-        val vBuffer = image.planes[2].buffer
+        val yremaing = yplane.buffer.remaining()
+        if (ySize == yremaing) {
+            curPos = ySize
+            yplane.buffer.get(nv21, 0, curPos)
 
+            vplane.buffer.get(nv21, curPos, uvSize)
+            curPos += uvSize
 
-        val yRemaining = yBuffer.remaining()
-        var pos = 0
+            val uplane = image.planes[1]
+            uplane.buffer.get(nv21, curPos, uvSize)
+            curPos += uvSize
 
-        pos = min(yRemaining, ySize)
-        yBuffer.get(nv21, 0, pos)
-
-        val uvPix = image.planes[2].pixelStride
-        val uvRemaing = vBuffer.remaining()
-
-        if (uvPix == 2) {
-            val length = min(uvSize * 2, uvRemaing)
-            val uBytes = ByteArray(length)
-            uBuffer.get(uBytes)
-            val vBytes = ByteArray(length)
-            vBuffer.get(vBytes)
-
-            val uOffset = height / 2 + pos
-            for (num in 0 until height / 2) {
-                nv21[pos + num] = vBytes[num * 2]
-                nv21[uOffset + num] = uBytes[num * 2]
+        } else {
+            val yStide = yplane.rowStride
+            var yPos = 0
+            for (row in 0 until height) {
+                val curWidth = min(width, yremaing - yPos)
+                if (curWidth <= 0) break
+                yplane.buffer.position(yPos)
+                yplane.buffer.get(nv21, curPos, curWidth)
+                yPos += yStide
+                curPos += curWidth
             }
 
-            pos += length
-        } else {// uvPix =1
-            val length = min(uvSize, uvRemaing)
-            vBuffer.get(nv21, pos, length)
-            pos += length
-            uBuffer.get(nv21, pos, length)
-            pos += length
+            Utils.log("y real size ="+ ySize + ", size =" + curPos)
+
+            val uvRemaing = vplane.buffer.remaining()
+            val uvStride = vplane.rowStride
+
+            var uvPos = 0
+            for (row in 0 .. height / 2) {
+                val curWidth = min(width, uvRemaing - uvPos)
+                if (curWidth <= 0) break
+                vplane.buffer.position(uvPos)
+                vplane.buffer.get(nv21, curPos , curWidth)
+                uvPos += uvStride
+                curPos += curWidth
+            }
         }
-        Utils.log("real size ="+ pos + ",need size ="+ nv21.size)
+
+        Utils.log("real size ="+ size +", curPos = "+ curPos)
+
         return nv21
     }
 
