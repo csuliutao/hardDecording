@@ -43,7 +43,10 @@ class VideoMgr private constructor(){
         return format
     }
 
-    fun imageToNV21(image : Image, isNv12 : Boolean = true) : ByteArray{
+    /**
+     * true 时nv21格式，否则nv12格式
+     */
+    fun imageToNV21(image : Image, isNv21 : Boolean = true) : ByteArray{
         val width = image.width
         val height = image.height
         Utils.log("width ="+ width+",height = "+ height)
@@ -90,7 +93,7 @@ class VideoMgr private constructor(){
             uplane.buffer.get(uBytes, 0 ,curWidth)
             val eachStep = if (uplane.pixelStride == 1) 1 else 2
             for (cur in 0 until curWidth step eachStep) {
-                if (isNv12) {
+                if (isNv21) {
                     nv21[curPos++] = uBytes[cur]
                     nv21[curPos++] = vBytes[cur]
                 } else {
