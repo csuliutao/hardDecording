@@ -61,7 +61,6 @@ class VideoMgr private constructor(){
         if (ySize == yremaing) {
             curPos = ySize
             yplane.buffer.get(nv21, 0, curPos)
-
         } else {
             val yStide = yplane.rowStride
             var yPos = 0
@@ -73,20 +72,29 @@ class VideoMgr private constructor(){
                 yPos += yStide
                 curPos += curWidth
             }
-
             Utils.log("y real size ="+ ySize + ", size =" + curPos)
         }
 
+        val uvRemaing = vplane.buffer.remaining()
+        val uvStride = vplane.rowStride
         if (uplane.pixelStride == 1) {
-            vplane.buffer.get(nv21, curPos, uvSize)
-            curPos += uvSize
-
-            uplane.buffer.get(nv21, curPos, uvSize)
-            curPos += uvSize
+            val uBytes = ByteArray(uvStride)
+            val vBytes = ByteArray(uvStride)
+            var uvPos = 0
+            for (h in 0 .. height/ 2) {
+                val curWidth = min(width / 2, uvRemaing - uvPos)
+                if (curWidth <= 0) break
+                vplane.buffer.position(uvPos)
+                vplane.buffer.get(vBytes, 0, curWidth)
+                uplane.buffer.position(uvPos)
+                uplane.buffer.get(uBytes, 0 ,curWidth)
+                for (cur in 0 until curWidth) {
+                    nv21[curPos++] = vBytes[cur]
+                    nv21[curPos++] = uBytes[cur]
+                }
+                uvPos += uvStride
+            }
         } else {
-            val uvRemaing = vplane.buffer.remaining()
-            val uvStride = vplane.rowStride
-
             var uvPos = 0
             for (row in 0 .. height / 2) {
                 val curWidth = min(width, uvRemaing - uvPos)
@@ -97,10 +105,7 @@ class VideoMgr private constructor(){
                 curPos += curWidth
             }
         }
-
-
         Utils.log("real size ="+ size +", curPos = "+ curPos)
-
         return nv21
     }
 

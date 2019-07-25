@@ -33,6 +33,7 @@ class MediaRecordActivity : AppCompatActivity() {
             CodecManager.start()
             curFile = MediaMgr.instance.getNewFile(false)
             mediaRecord = MediaRecord(curFile!!.canonicalPath)
+            surface?.setDefaultBufferSize(width, height)
             if (Utils.checkMediaPermission(this@MediaRecordActivity)) mediaRecord.prepare(this@MediaRecordActivity,
                 Surface(surface), width, height
             )
