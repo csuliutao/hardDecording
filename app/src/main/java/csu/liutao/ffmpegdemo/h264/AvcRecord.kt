@@ -58,7 +58,7 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
                 format.setInteger(MediaFormat.KEY_FRAME_RATE, 25)
                 format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
                 format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
-                format.setInteger(MediaFormat.KEY_ROTATION, 90)
+//                format.setInteger(MediaFormat.KEY_ROTATION, 90) // 只有在输出到surface时才有效
                 codecMgr = CodecManager(format, codecCallback)
                 codecMgr!!.start()
             }
