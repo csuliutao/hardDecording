@@ -104,6 +104,30 @@ class VideoMgr private constructor(){
         return nv21
     }
 
+    fun rotate90(byteArray: ByteArray, width: Int,  height: Int) :ByteArray {
+        val result = ByteArray(byteArray.size)
+        // 首先旋转Y数据
+        var pos = 0
+        var k = 0
+        for (i in 0..width - 1) {
+            for (j in height - 1 downTo 0) {
+                result[k++] = byteArray[j * width + i]
+            }
+        }
+
+        pos = width * height
+        var i = 0
+        while (i <= width - 2) {
+            for (j in height / 2 - 1 downTo 0) {
+                result[k++] = byteArray[pos + j * width + i]
+                result[k++] = byteArray[pos + j * width + i + 1]
+            }
+            i += 2
+        }
+
+        return result
+    }
+
 
     companion object{
         val instance = VideoMgr()

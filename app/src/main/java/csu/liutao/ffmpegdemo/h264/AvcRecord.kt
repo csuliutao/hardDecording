@@ -49,7 +49,8 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
     private val imageListener = object : Camera2Mgr.ImageListener {
         override fun handleImage(image: Image) {
             val byte = VideoMgr.instance.imageToNV21(image)
-            queue.offer(MediaInfo(byte, 0, byte.size))
+            val srcByte = VideoMgr.instance.rotate90(byte, image.width, image.height)
+            queue.offer(MediaInfo(srcByte, 0, srcByte.size))
         }
     }
 

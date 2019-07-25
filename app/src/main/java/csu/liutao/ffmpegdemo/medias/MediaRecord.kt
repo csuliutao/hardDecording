@@ -26,6 +26,7 @@ class MediaRecord(val path: String) {
     fun saveRecord(){
         aacRecord.stop()
         avcRecord.stop()
+        Thread.sleep(100)
         muxerManger.stop()
     }
     fun release(){
