@@ -34,7 +34,7 @@ class VideoRecordActivity : AppCompatActivity (){
     private var trackId = -1
     val imageListener = object : Camera2Mgr.ImageListener {
         override fun handleImage(image: Image) {
-            val srcByte = VideoMgr.instance.imageToNV21(image)
+            val srcByte = VideoMgr.instance.imageToNV2190(image)
             encoder?.offer(srcByte)
         }
     }

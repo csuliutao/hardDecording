@@ -104,6 +104,11 @@ class VideoMgr private constructor(){
         return nv21
     }
 
+    fun imageToNV2190(image : Image) : ByteArray{
+        val srcByte = imageToNV21(image)
+        return rotate90(srcByte, image.width, image.height)
+    }
+
     fun rotate90(byteArray: ByteArray, width: Int,  height: Int) :ByteArray {
         val result = ByteArray(byteArray.size)
         // 首先旋转Y数据
