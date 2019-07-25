@@ -23,7 +23,6 @@ class MediaPlayer(val path : String){
     fun stop(){
         aacPlayer.stop()
         avcPlayer.stop()
-        Thread.sleep(100)
     }
 
     fun release(){

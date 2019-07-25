@@ -7,22 +7,21 @@ import android.view.Surface
 import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.medias.CodecManager
 import csu.liutao.ffmpegdemo.medias.ExtractorManager
+import csu.liutao.ffmpegdemo.medias.LockCodecCallback
 import csu.liutao.ffmpegdemo.medias.MediaInfo
 import java.util.concurrent.LinkedBlockingDeque
+import java.util.concurrent.locks.ReentrantReadWriteLock
 
 class AvcPlayer (val path : String, queueSize : Int = 10){
     private val tag = "AvcPlayer"
     private lateinit var extractorMgr: ExtractorManager
     private var codecMgr : CodecManager? = null
     private lateinit var queue : LinkedBlockingDeque<MediaInfo>
+    private val lock = ReentrantReadWriteLock()
 
-    private val callback = object : MediaCodec.Callback(){
-        override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
-            Utils.log(tag, "output length="+ info.size)
-            if (codecMgr != null && codecMgr!!.isCodec()) codec.releaseOutputBuffer(index, true)
-        }
+    private val callback = object : LockCodecCallback(lock){
 
-        override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
+        override fun onInput(codec: MediaCodec, index: Int) {
             if (codecMgr == null || !codecMgr!!.isCodec()) {
                 queue.clear()
                 return
@@ -32,12 +31,13 @@ class AvcPlayer (val path : String, queueSize : Int = 10){
             val info = ExtractorManager.Info()
             val length = extractorMgr.read(buffer, info)
             Utils.log(tag, "input length="+ length)
-            if (length > 0 && codecMgr != null && codecMgr!!.isCodec()) codec.queueInputBuffer(index, 0, length, info.time, info.flag)
+            if (length > 0) codec.queueInputBuffer(index, 0, length, info.time, info.flag)
+
         }
 
-        override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) = Unit
-
-        override fun onError(codec: MediaCodec, e: MediaCodec.CodecException) = Unit
+        override fun onOutput(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
+            if (codecMgr != null && codecMgr!!.isCodec()) codec.releaseOutputBuffer(index, true)
+        }
     }
 
     init {
@@ -58,10 +58,14 @@ class AvcPlayer (val path : String, queueSize : Int = 10){
     }
 
     fun stop() {
+        lock.writeLock().lock()
         codecMgr?.stop()
+        lock.writeLock().unlock()
     }
 
     fun release() {
+        lock.writeLock().lock()
         codecMgr?.release()
+        lock.writeLock().unlock()
     }
 }

@@ -8,23 +8,19 @@ import android.media.MediaFormat
 import android.view.Surface
 import csu.liutao.ffmpegdemo.medias.*
 import java.util.concurrent.LinkedBlockingDeque
+import java.util.concurrent.locks.ReentrantReadWriteLock
 
 class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
     private lateinit var cameraMgr : Camera2Mgr
     private lateinit var codecMgr : CodecManager
     private lateinit var queue : LinkedBlockingDeque<MediaInfo>
+    private val lock = ReentrantReadWriteLock()
 
     private var flag = MediaCodec.BUFFER_FLAG_CODEC_CONFIG
 
-    private val codecCallback = object : MediaCodec.Callback() {
-        override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
-            if (!codecMgr.isCodec()) return
-            val buffer = codec.getOutputBuffer(index)
-            muxer.write(buffer, info, true)
-            if (codecMgr != null && codecMgr.isCodec()) codec.releaseOutputBuffer(index, false)
-        }
+    private val codecCallback = object : LockCodecCallback(lock) {
 
-        override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
+        override fun onInput(codec: MediaCodec, index: Int) {
             if (!codecMgr.isCodec()) {
                 queue.clear()
                 return
@@ -34,16 +30,23 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
             val info = queue.take()
             buffer.put(info.bytes, info.offset, info.size)
             muxer.setStartTime()
-            if (codecMgr.isCodec()) codec.queueInputBuffer(index, info.offset, info.size, System.nanoTime() / 1000 - muxer.getStartTime(), flag)
+            codec.queueInputBuffer(index, info.offset, info.size, System.nanoTime() / 1000 - muxer.getStartTime(), flag)
             if (flag == MediaCodec.BUFFER_FLAG_CODEC_CONFIG) flag = MediaCodec.BUFFER_FLAG_KEY_FRAME
+
+        }
+
+        override fun onOutput(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
+            if (!codecMgr.isCodec()) return
+            val buffer = codec.getOutputBuffer(index)
+            muxer.write(buffer, info, true)
+            codec.releaseOutputBuffer(index, false)
+
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
             muxer.addTrack(format, true)
             muxer.start()
         }
-
-        override fun onError(codec: MediaCodec, e: MediaCodec.CodecException) = Unit
     }
 
     private val imageListener = object : Camera2Mgr.ImageListener {
@@ -74,13 +77,17 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
 
 
     fun stop() {
+        lock.writeLock().lock()
         cameraMgr.stop(true)
         codecMgr.stop()
+        lock.writeLock().unlock()
     }
 
     fun release() {
+        lock.writeLock().lock()
         cameraMgr.release()
         codecMgr.release()
+        lock.writeLock().lock()
     }
 
     fun start() {

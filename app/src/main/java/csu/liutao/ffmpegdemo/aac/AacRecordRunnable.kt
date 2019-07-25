@@ -4,11 +4,9 @@ import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
 import csu.liutao.ffmpegdemo.Utils
-import csu.liutao.ffmpegdemo.medias.CodecManager
-import csu.liutao.ffmpegdemo.medias.MediaInfo
-import csu.liutao.ffmpegdemo.medias.MediaRunnable
-import csu.liutao.ffmpegdemo.medias.MuxerManger
+import csu.liutao.ffmpegdemo.medias.*
 import java.util.concurrent.LinkedBlockingDeque
+import java.util.concurrent.locks.ReentrantReadWriteLock
 
 class AacRecordRunnable(var muxer: MuxerManger, queueSize : Int = 10) :MediaRunnable {
     private val tag = "AacRecordRunnable"
@@ -16,15 +14,11 @@ class AacRecordRunnable(var muxer: MuxerManger, queueSize : Int = 10) :MediaRunn
     private val queue = LinkedBlockingDeque<MediaInfo>(queueSize)
     private val audioRecord = AudioRecordManager.instance
 
-    private val codecCallback = object : MediaCodec.Callback() {
-        override fun onOutputBufferAvailable(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
-            if (codecManager == null || !codecManager!!.isCodec()) return
-            val buffer = codec.getOutputBuffer(index)
-            muxer.write(buffer, info, false)
-            codec.releaseOutputBuffer(index, false)
-        }
+    private val lock = ReentrantReadWriteLock()
 
-        override fun onInputBufferAvailable(codec: MediaCodec, index: Int) {
+    private val codecCallback = object : LockCodecCallback(lock) {
+
+        override fun onInput(codec: MediaCodec, index: Int) {
             if (codecManager == null || !codecManager!!.isCodec()) {
                 queue.clear()
                 return
@@ -35,16 +29,20 @@ class AacRecordRunnable(var muxer: MuxerManger, queueSize : Int = 10) :MediaRunn
             val info = queue.take()
             buffer.put(info.bytes, info.offset, info.size)
             muxer.setStartTime()
-            if (codecManager != null && codecManager!!.isCodec()) codec.queueInputBuffer(index, info.offset, info.size, System.nanoTime() / 1000 - muxer.getStartTime(), 0)
+            codec.queueInputBuffer(index, info.offset, info.size, System.nanoTime() / 1000 - muxer.getStartTime(), 0)
+
+        }
+
+        override fun onOutput(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
+            if (codecManager == null || !codecManager!!.isCodec()) return
+            val buffer = codec.getOutputBuffer(index)
+            muxer.write(buffer, info, false)
+            codec.releaseOutputBuffer(index, false)
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
             muxer.addTrack(format, false)
             muxer.start()
-        }
-
-        override fun onError(codec: MediaCodec, e: MediaCodec.CodecException) {
-            Utils.log(tag, "onError")
         }
     }
 
