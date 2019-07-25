@@ -12,16 +12,17 @@ import java.util.concurrent.locks.ReentrantReadWriteLock
 
 class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
     private lateinit var cameraMgr : Camera2Mgr
-    private lateinit var codecMgr : CodecManager
+    private var codecMgr : CodecManager? = null
     private lateinit var queue : LinkedBlockingDeque<MediaInfo>
     private val lock = ReentrantReadWriteLock()
 
+    @Volatile
     private var flag = MediaCodec.BUFFER_FLAG_CODEC_CONFIG
 
     private val codecCallback = object : LockCodecCallback(lock) {
 
         override fun onInput(codec: MediaCodec, index: Int) {
-            if (!codecMgr.isCodec()) {
+            if (codecMgr == null || !codecMgr!!.isCodec()) {
                 queue.clear()
                 return
             }
@@ -36,7 +37,7 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
         }
 
         override fun onOutput(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
-            if (!codecMgr.isCodec()) return
+            if (codecMgr == null || !codecMgr!!.isCodec()) return
             val buffer = codec.getOutputBuffer(index)
             muxer.write(buffer, info, true)
             codec.releaseOutputBuffer(index, false)
@@ -51,6 +52,16 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
 
     private val imageListener = object : Camera2Mgr.ImageListener {
         override fun handleImage(image: Image) {
+            if (codecMgr == null) {
+                val format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, image.height, image.width)
+                format.setInteger(MediaFormat.KEY_BIT_RATE, image.width * image.height * 5)
+                format.setInteger(MediaFormat.KEY_FRAME_RATE, 25)
+                format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
+                format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
+                format.setInteger(MediaFormat.KEY_ROTATION, 90)
+                codecMgr = CodecManager(format, codecCallback)
+                codecMgr!!.start()
+            }
             val srcByte = VideoMgr.instance.imageToNV2190(image)
             queue.offer(MediaInfo(srcByte, 0, srcByte.size))
         }
@@ -66,32 +77,24 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
             .imageReader(width, height, imageListener)
             .build()
         cameraMgr.openCamera(context)
-        val format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, width, height)
-        format.setInteger(MediaFormat.KEY_BIT_RATE, width * height * 5)
-        format.setInteger(MediaFormat.KEY_FRAME_RATE, 25)
-        format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
-        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
-        format.setInteger(MediaFormat.KEY_ROTATION, 90)
-        codecMgr = CodecManager(format, codecCallback)
     }
 
 
     fun stop() {
         lock.writeLock().lock()
         cameraMgr.stop(true)
-        codecMgr.stop()
+        codecMgr?.stop()
         lock.writeLock().unlock()
     }
 
     fun release() {
         lock.writeLock().lock()
         cameraMgr.release()
-        codecMgr.release()
+        codecMgr?.release()
         lock.writeLock().lock()
     }
 
     fun start() {
         cameraMgr.take()
-        codecMgr.start()
     }
 }

@@ -92,7 +92,7 @@ class Camera2Mgr private constructor() {
         requestBuilder.addTarget(previewSurface)
         if (addImageReader) {
             requestBuilder.addTarget(imageReader!!.surface)
-            requestBuilder.set(CaptureRequest.JPEG_ORIENTATION, 90)
+            if (isForPicture) requestBuilder.set(CaptureRequest.JPEG_ORIENTATION, 90)
         }
         if (addImageReader && isForPicture) {
             cameraSession!!.capture(requestBuilder.build(), null, subHandler)
