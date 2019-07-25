@@ -77,33 +77,23 @@ class VideoMgr private constructor(){
 
         val uvRemaing = vplane.buffer.remaining()
         val uvStride = vplane.rowStride
-        if (uplane.pixelStride == 1) {
-            val uBytes = ByteArray(uvStride)
-            val vBytes = ByteArray(uvStride)
-            var uvPos = 0
-            for (h in 0 .. height/ 2) {
-                val curWidth = min(width / 2, uvRemaing - uvPos)
-                if (curWidth <= 0) break
-                vplane.buffer.position(uvPos)
-                vplane.buffer.get(vBytes, 0, curWidth)
-                uplane.buffer.position(uvPos)
-                uplane.buffer.get(uBytes, 0 ,curWidth)
-                for (cur in 0 until curWidth) {
-                    nv21[curPos++] = vBytes[cur]
-                    nv21[curPos++] = uBytes[cur]
-                }
-                uvPos += uvStride
+        val uBytes = ByteArray(uvStride)
+        val vBytes = ByteArray(uvStride)
+        var uvPos = 0
+        val baseWidth = if (uplane.pixelStride == 1) width / 2 else width
+        for (h in 0 until height / 2) {
+            val curWidth = min(baseWidth, uvRemaing - uvPos)
+            if (curWidth <= 0) break
+            vplane.buffer.position(uvPos)
+            vplane.buffer.get(vBytes, 0, curWidth)
+            uplane.buffer.position(uvPos)
+            uplane.buffer.get(uBytes, 0 ,curWidth)
+            val eachStep = if (uplane.pixelStride == 1) 1 else 2
+            for (cur in 0 until curWidth step eachStep) {
+                nv21[curPos++] = uBytes[cur]
+                nv21[curPos++] = vBytes[cur]
             }
-        } else {
-            var uvPos = 0
-            for (row in 0 .. height / 2) {
-                val curWidth = min(width, uvRemaing - uvPos)
-                if (curWidth <= 0) break
-                vplane.buffer.position(uvPos)
-                vplane.buffer.get(nv21, curPos , curWidth)
-                uvPos += uvStride
-                curPos += curWidth
-            }
+            uvPos += uvStride
         }
         Utils.log("real size ="+ size +", curPos = "+ curPos)
         return nv21
