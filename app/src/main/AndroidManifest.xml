@@ -4,6 +4,7 @@
     
     <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-feature android:glEsVersion="0x00030000" android:required="true"/>
 
     <application
             android:allowBackup="true"
@@ -37,6 +38,9 @@
         <activity android:name=".ativities.MediaRecordActivity" android:theme="@style/FullScreen"/>
 
         <activity android:name=".ativities.MediaPlayerActivity" android:theme="@style/FullScreen"/>
+
+        <activity android:name=".opengles.OpglDemo" android:theme="@style/FullScreen"/>
+
     </application>
 
 </manifest>

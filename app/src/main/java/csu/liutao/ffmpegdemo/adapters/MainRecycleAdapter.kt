@@ -9,6 +9,7 @@ import android.widget.Button
 import androidx.recyclerview.widget.RecyclerView
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.ativities.*
+import csu.liutao.ffmpegdemo.opengles.OpglDemo
 
 class MainRecycleAdapter(val context : Context): RecyclerView.Adapter<MainRecycleAdapter.MainHolder>() {
     private val decs = ArrayList<String>()
@@ -17,20 +18,23 @@ class MainRecycleAdapter(val context : Context): RecyclerView.Adapter<MainRecycl
 
     init {
         inflater = LayoutInflater.from(context)
-        decs.add("surface image view display")
+        decs.add("surface展示图片")
         intents.add(Intent(context, SurfaceImgActivity::class.java))
 
-        decs.add("audio record , audio track demo")
+        decs.add("aac音频录制播放")
         intents.add(Intent(context, AudioRecordsActivity::class.java))
 
-        decs.add("camera take picture")
+        decs.add("camera2照片")
         intents.add(Intent(context, PictureActivity::class.java))
 
-        decs.add("camera vedio")
-        intents.add(Intent(context, VideosActivity::class.java))
+        /*decs.add("camera vedio")
+        intents.add(Intent(context, VideosActivity::class.java))*/
 
-        decs.add("media ...")
+        decs.add("aac+h264 音视频录制播放")
         intents.add(Intent(context, MediasActivity::class.java))
+
+        decs.add("opengl es 使用")
+        intents.add(Intent(context, OpglDemo::class.java))
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainHolder {
