@@ -53,15 +53,18 @@ class OpglDemo : AppCompatActivity() {
         val V_SIZE = 2
 
         val vertexs = floatArrayOf(
-            -0.75f, 0.75f,
-            0.75f, 0.75f,
-            0.75f, 0f,
-            -0.75f, 0f,
-            -0.75f, -0.75f,
-            0.75f, -0.75f,
-            0f, 0.3f,
-            0f, -0.3f
+            0f, 0f,1f, 1f, 1f,
+            -0.75f, 0.75f,0.7f, 0.7f, 0.7f,
+            0.75f, 0.75f,0.7f, 0.7f, 0.7f,
+            0.75f, -0.75f,0.7f, 0.7f, 0.7f,
+            -0.75f, -0.75f,0.7f, 0.7f, 0.7f,
+            -0.75f, 0.75f,0.7f, 0.7f, 0.7f,
+            -0.75f, 0f, 0f, 0f, 1f,
+            0.75f, 0f, 0f, 0f, 1f,
+            0f, 0.3f, 1f, 0f, 0f,
+            0f, -0.3f, 0f, 1f, 0f
         )
+
         private lateinit var vertexBuffer: FloatBuffer
         private lateinit var vertexString : String
         private lateinit var fragmentString :String
@@ -101,19 +104,25 @@ class OpglDemo : AppCompatActivity() {
 
             vertexBuffer.position(0)
             GLES30.glEnableVertexAttribArray(V_POSION)
-            GLES30.glVertexAttribPointer(V_POSION, 2, GLES30.GL_FLOAT, false, 0, vertexBuffer)
+            GLES30.glVertexAttribPointer(V_POSION, 2, GLES30.GL_FLOAT, false, 5 * 4, vertexBuffer)
+
+            vertexBuffer.position(2)
+            GLES30.glEnableVertexAttribArray(V_COLOE)
+            GLES30.glVertexAttribPointer(V_COLOE, 3, GLES30.GL_FLOAT, false, 5 * 4, vertexBuffer)
+            GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 0, 6)
+
+            vertexBuffer.position(2 + 6 * 5)
+            GLES30.glVertexAttribPointer(V_COLOE, 3, GLES30.GL_FLOAT, false, 5 * 4, vertexBuffer)
+            GLES30.glLineWidth(5f)
+            GLES30.glDrawArrays(GLES30.GL_LINES, 0, 2)
 
 
-            GLES30.glVertexAttrib4f(V_COLOE, 0f, 1f, 0f, 0f)
-            GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 0, 4)
-
-            GLES30.glVertexAttrib4f(V_COLOE, 0f, 1f, 1f, 0f)
-            GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 2, 4)
-
-            GLES30.glVertexAttrib4f(V_COLOE, 1f, 0f, 0f, 0f)
+            vertexBuffer.position(2 + 8 * 5)
+            GLES30.glVertexAttribPointer(V_COLOE, 3, GLES30.GL_FLOAT, false, 5 * 4, vertexBuffer)
             GLES30.glVertexAttrib1f(V_SIZE, 20f)
-            GLES30.glDrawArrays(GLES30.GL_POINTS, 6, 2)
+            GLES30.glDrawArrays(GLES30.GL_POINTS, 0, 2)
 
+            GLES30.glDisableVertexAttribArray(V_COLOE)
             GLES30.glDisableVertexAttribArray(V_POSION)
         }
 
