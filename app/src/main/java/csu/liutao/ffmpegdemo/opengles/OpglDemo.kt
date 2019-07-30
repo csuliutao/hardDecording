@@ -53,10 +53,15 @@ class OpglDemo : AppCompatActivity() {
         val V_SIZE = 2
 
         val vertexs = floatArrayOf(
-            0.5f, 0.5f,
-            0.5f, -0.5f,
-            -0.5f,-0.5f,
-            -0.5f, 0.5f)
+            -0.75f, 0.75f,
+            0.75f, 0.75f,
+            0.75f, 0f,
+            -0.75f, 0f,
+            -0.75f, -0.75f,
+            0.75f, -0.75f,
+            0f, 0.3f,
+            0f, -0.3f
+        )
         private lateinit var vertexBuffer: FloatBuffer
         private lateinit var vertexString : String
         private lateinit var fragmentString :String
@@ -93,13 +98,22 @@ class OpglDemo : AppCompatActivity() {
         override fun onDrawFrame(gl: GL10?) {
             GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT)
             GLES30.glUseProgram(program)
-            GLES30.glVertexAttrib4f(V_COLOE, 0f, 1f, 0f, 0f)
-            GLES30.glLineWidth(10f)
-            GLES30.glVertexAttrib1f(V_SIZE, 20f)
+
             vertexBuffer.position(0)
-            GLES30.glVertexAttribPointer(V_POSION, 2, GLES30.GL_FLOAT, false, 0, vertexBuffer)
             GLES30.glEnableVertexAttribArray(V_POSION)
-            GLES30.glDrawArrays(GLES30.GL_LINE_LOOP, 0, 4)
+            GLES30.glVertexAttribPointer(V_POSION, 2, GLES30.GL_FLOAT, false, 0, vertexBuffer)
+
+
+            GLES30.glVertexAttrib4f(V_COLOE, 0f, 1f, 0f, 0f)
+            GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 0, 4)
+
+            GLES30.glVertexAttrib4f(V_COLOE, 0f, 1f, 1f, 0f)
+            GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 2, 4)
+
+            GLES30.glVertexAttrib4f(V_COLOE, 1f, 0f, 0f, 0f)
+            GLES30.glVertexAttrib1f(V_SIZE, 20f)
+            GLES30.glDrawArrays(GLES30.GL_POINTS, 6, 2)
+
             GLES30.glDisableVertexAttribArray(V_POSION)
         }
 
