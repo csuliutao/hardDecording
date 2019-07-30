@@ -52,6 +52,12 @@ class OpglDemo : AppCompatActivity() {
         val V_COLOE = 1
         val V_SIZE = 2
 
+        val POSITION_DIMENSION = 2
+        val COLOR_DIMENSION = 3
+        val STRIDE_NUM = POSITION_DIMENSION + COLOR_DIMENSION
+        val TRIANGLE_POINTS_NUM = 6
+        val LINE_POINTS_NUM = 2
+
         val vertexs = floatArrayOf(
             0f, 0f,1f, 1f, 1f,
             -0.75f, 0.75f,0.7f, 0.7f, 0.7f,
@@ -102,23 +108,29 @@ class OpglDemo : AppCompatActivity() {
             GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT)
             GLES30.glUseProgram(program)
 
-            vertexBuffer.position(0)
             GLES30.glEnableVertexAttribArray(V_POSION)
-            GLES30.glVertexAttribPointer(V_POSION, 2, GLES30.GL_FLOAT, false, 5 * 4, vertexBuffer)
-
-            vertexBuffer.position(2)
             GLES30.glEnableVertexAttribArray(V_COLOE)
-            GLES30.glVertexAttribPointer(V_COLOE, 3, GLES30.GL_FLOAT, false, 5 * 4, vertexBuffer)
-            GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 0, 6)
+            var startPos = 0
 
-            vertexBuffer.position(2 + 6 * 5)
-            GLES30.glVertexAttribPointer(V_COLOE, 3, GLES30.GL_FLOAT, false, 5 * 4, vertexBuffer)
+            vertexBuffer.position(startPos)
+            GLES30.glVertexAttribPointer(V_POSION, POSITION_DIMENSION, GLES30.GL_FLOAT, false, STRIDE_NUM * 4, vertexBuffer)
+            vertexBuffer.position(POSITION_DIMENSION + startPos)
+            GLES30.glVertexAttribPointer(V_COLOE, COLOR_DIMENSION, GLES30.GL_FLOAT, false, STRIDE_NUM * 4, vertexBuffer)
+            GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 0, TRIANGLE_POINTS_NUM)
+
+            startPos = TRIANGLE_POINTS_NUM * STRIDE_NUM
+            vertexBuffer.position(startPos)
+            GLES30.glVertexAttribPointer(V_POSION, POSITION_DIMENSION, GLES30.GL_FLOAT, false, STRIDE_NUM * 4, vertexBuffer)
+            vertexBuffer.position(POSITION_DIMENSION + startPos)
+            GLES30.glVertexAttribPointer(V_COLOE, COLOR_DIMENSION, GLES30.GL_FLOAT, false, STRIDE_NUM * 4, vertexBuffer)
             GLES30.glLineWidth(5f)
-            GLES30.glDrawArrays(GLES30.GL_LINES, 0, 2)
+            GLES30.glDrawArrays(GLES30.GL_LINES, 0, LINE_POINTS_NUM)
 
-
-            vertexBuffer.position(2 + 8 * 5)
-            GLES30.glVertexAttribPointer(V_COLOE, 3, GLES30.GL_FLOAT, false, 5 * 4, vertexBuffer)
+            startPos = (TRIANGLE_POINTS_NUM + LINE_POINTS_NUM) * STRIDE_NUM
+            vertexBuffer.position(startPos)
+            GLES30.glVertexAttribPointer(V_POSION, POSITION_DIMENSION, GLES30.GL_FLOAT, false, STRIDE_NUM * 4, vertexBuffer)
+            vertexBuffer.position(POSITION_DIMENSION + startPos)
+            GLES30.glVertexAttribPointer(V_COLOE, COLOR_DIMENSION, GLES30.GL_FLOAT, false, STRIDE_NUM * 4, vertexBuffer)
             GLES30.glVertexAttrib1f(V_SIZE, 20f)
             GLES30.glDrawArrays(GLES30.GL_POINTS, 0, 2)
 
