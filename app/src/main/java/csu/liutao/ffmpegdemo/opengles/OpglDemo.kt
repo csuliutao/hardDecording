@@ -3,6 +3,7 @@ package csu.liutao.ffmpegdemo.opengles
 import android.content.Context
 import android.opengl.GLES30
 import android.opengl.GLSurfaceView
+import android.opengl.Matrix
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
@@ -51,12 +52,15 @@ class OpglDemo : AppCompatActivity() {
         val V_POSION = 0
         val V_COLOE = 1
         val V_SIZE = 2
+        val V_MATRIX = 3
 
         val POSITION_DIMENSION = 2
         val COLOR_DIMENSION = 3
         val STRIDE_NUM = POSITION_DIMENSION + COLOR_DIMENSION
         val TRIANGLE_POINTS_NUM = 6
         val LINE_POINTS_NUM = 2
+
+        private var floats = FloatArray(16)
 
         val vertexs = floatArrayOf(
             0f, 0f,1f, 1f, 1f,
@@ -108,6 +112,8 @@ class OpglDemo : AppCompatActivity() {
             GLES30.glClear(GLES30.GL_COLOR_BUFFER_BIT)
             GLES30.glUseProgram(program)
 
+            GLES30.glUniformMatrix4fv(V_MATRIX, 1, false, floats, 0)
+
             GLES30.glEnableVertexAttribArray(V_POSION)
             GLES30.glEnableVertexAttribArray(V_COLOE)
             var startPos = 0
@@ -140,6 +146,13 @@ class OpglDemo : AppCompatActivity() {
 
         override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
             GLES30.glViewport(0, 0, width, height)
+            val ratio = if (height < width) width.toFloat() / height else height.toFloat() / width
+            if (height > width) {
+                Matrix.orthoM(floats, 0, -1f, 1f, -ratio, ratio, -1f, 1f)
+            } else {
+                Matrix.orthoM(floats, 0, -ratio, ratio, -1f, 1f, -1f, 1f)
+            }
+            Utils.log("float ="+floats.toString())
         }
 
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
