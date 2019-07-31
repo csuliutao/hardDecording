@@ -14,12 +14,12 @@ class TableProgram : IProgram {
     var matrix = FloatArray(16)
 
     val floats = floatArrayOf(
-        0f, 0f, 0f, 1.5f,
-        -0.75f, 0.75f, 0f, 2f,
-        0.75f, 0.75f, 0f, 2f,
-        0.75f, -0.75f, 0f, 1f,
-        -0.75f, -0.75f, 0f, 1f,
-        -0.75f, 0.75f, 0f, 2f
+        0f, 0f, 0f, 1.5f, 0.5f, 0.5f,
+        -0.75f, 0.75f, 0f, 2f, 0f, 0f,
+        0.75f, 0.75f, 0f, 2f, 1f, 0f,
+        0.75f, -0.75f, 0f, 1f, 1f, 1f,
+        -0.75f, -0.75f, 0f, 1f,0f, 1f,
+        -0.75f, 0.75f, 0f, 2f, 0f, 0f
     )
     private lateinit var vetexs : FloatBuffer
     private var textureId = -1
@@ -34,13 +34,18 @@ class TableProgram : IProgram {
     override fun prepare(context: Context, vetexId: Int, fragmentId: Int) {
         curProgram = GlUtils.initProgramWithShaderResource(context, vetexId, fragmentId)
         attrHandler.addBuffer(vetexs)
-        attrHandler.addLocationInfo(POSITION, VertexAttribHandler.AttribInfo(4, GL_FLOAT, 4 * 4))
+        attrHandler.addLocationInfo(POSITION, VertexAttribHandler.AttribInfo(4, GL_FLOAT, 6 * 4))
+        attrHandler.addLocationInfo(TEXCOORD, VertexAttribHandler.AttribInfo(2, GL_FLOAT, 6 * 4))
         textureId = GlUtils.loadTexture(context, R.drawable.beatiful)
     }
 
     override fun draw() {
         glUseProgram(curProgram)
         glUniformMatrix4fv(MARTIX, 1, false, matrix, 0)
+
+        attrHandler.enableAttribute(TEXCOORD)
+        attrHandler.bindAttribute(TEXCOORD, 4)
+
         glActiveTexture(GL_TEXTURE0)
         glBindTexture(GL_TEXTURE_2D, textureId)
         glUniform1i(TEXUNIT, 0)
