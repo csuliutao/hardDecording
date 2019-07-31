@@ -3,6 +3,7 @@ package csu.liutao.ffmpegdemo.opengles
 import android.content.Context
 import java.nio.FloatBuffer
 import android.opengl.GLES30.*
+import android.opengl.Matrix
 
 class MalletProgram : IProgram {
     val matrix = 0
@@ -43,6 +44,13 @@ class MalletProgram : IProgram {
     }
 
     override fun initScreenSize(width: Int, height: Int) {
-        GlUtils.getBaseMatrix(matArray, width, height)
+        GlUtils.getOMatrix(matArray, width, height)
+        val viewFloats = FloatArray(16)
+        Matrix.setLookAtM(viewFloats, 0, 0f, 1f, 1f, 0f, 0f, 0f, 0f, 1f, 0f)
+        val pMatrix = FloatArray(16)
+        Matrix.perspectiveM(pMatrix, 0, 45f, width.toFloat() / height, 2f, 10f)
+        Matrix.translateM(pMatrix, 0, 0f, 0f, -3f)
+        Matrix.multiplyMM(matArray, 0, viewFloats, 0, matArray, 0)
+        Matrix.multiplyMM(matArray, 0, pMatrix, 0, matArray, 0)
     }
 }

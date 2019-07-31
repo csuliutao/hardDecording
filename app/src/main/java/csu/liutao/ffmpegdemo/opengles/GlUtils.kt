@@ -84,20 +84,25 @@ class GlUtils private constructor(){
             Utils.log("program "+ pg  +", result ="+ status[0] + ", info =" + glGetProgramInfoLog(pg))
         }
 
-        fun getBaseMatrix(result : FloatArray, width : Int, height : Int, fovy : Float = 45f,near : Float = 2f, far : Float =10f,  zoffset : Float = -3f) {
+        fun getBase3DMatrix(result : FloatArray, width : Int, height : Int, fovy : Float = 45f, near : Float = 2f, far : Float =10f, zoffset : Float = -3f) {
             val omFloats = FloatArray(16)
-            val ratio = if (height < width) width.toFloat() / height else height.toFloat() / width
-            if (height > width) {
-                Matrix.orthoM(omFloats, 0, -1f, 1f, -ratio, ratio, -1f, 1f)
-            } else {
-                Matrix.orthoM(omFloats, 0, -ratio, ratio, -1f, 1f, -1f, 1f)
-            }
+            getOMatrix(omFloats, width, height)
             val perFloats = FloatArray(16)
             Matrix.perspectiveM(perFloats, 0, fovy, width.toFloat() / height, 1f, 10f)
 //            Matrix.setIdentityM(perFloats, 0)
             Matrix.translateM(perFloats, 0, 0f, 0f, zoffset)
 //            Matrix.rotateM(perFloats, 0, 60f, 1f, 0f, 0f)
             Matrix.multiplyMM(result, 0, perFloats, 0, omFloats, 0)
+        }
+
+
+        fun getOMatrix(result: FloatArray, width: Int, height: Int) {
+            val ratio = if (height < width) width.toFloat() / height else height.toFloat() / width
+            if (height > width) {
+                Matrix.orthoM(result, 0, -1f, 1f, -ratio, ratio, -1f, 1f)
+            } else {
+                Matrix.orthoM(result, 0, -ratio, ratio, -1f, 1f, -1f, 1f)
+            }
         }
 
         fun loadTexture(contex : Context, imageId : Int) : Int {

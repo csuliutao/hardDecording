@@ -2,6 +2,7 @@ package csu.liutao.ffmpegdemo.opengles
 
 import android.content.Context
 import android.opengl.GLES30.*
+import android.opengl.Matrix
 import csu.liutao.ffmpegdemo.R
 import java.nio.FloatBuffer
 
@@ -57,6 +58,13 @@ class TableProgram : IProgram {
     }
 
     override fun initScreenSize(width: Int, height: Int) {
-        GlUtils.getBaseMatrix(matrix, width, height)
+        GlUtils.getOMatrix(matrix, width, height)
+        val viewFloats = FloatArray(16)
+        Matrix.setLookAtM(viewFloats, 0, 0f, 0.1f, 0.1f, 0f, 0f, 0f, 0f, 1f, 0f)
+        val pMatrix = FloatArray(16)
+        Matrix.perspectiveM(pMatrix, 0, 45f, width.toFloat() / height, 2f, 10f)
+        Matrix.translateM(pMatrix, 0, 0f, 0f, -3f)
+        Matrix.multiplyMM(matrix, 0, viewFloats, 0, matrix, 0)
+        Matrix.multiplyMM(matrix, 0, pMatrix, 0, matrix, 0)
     }
 }

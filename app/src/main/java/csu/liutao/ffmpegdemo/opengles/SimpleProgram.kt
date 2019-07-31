@@ -75,6 +75,6 @@ class SimpleProgram: IProgram{
     }
 
     override fun initScreenSize(width: Int, height: Int) {
-        GlUtils.getBaseMatrix(floats, width,height)
+        GlUtils.getBase3DMatrix(floats, width,height)
     }
 }
