@@ -80,5 +80,7 @@ class GlUtils private constructor(){
             GLES30.glGetProgramiv(pg, GLES30.GL_VALIDATE_STATUS, status, 0)
             Utils.log("program "+ pg  +", result ="+ status[0] + ", info =" + GLES30.glGetProgramInfoLog(pg))
         }
+
+
     }
 }
