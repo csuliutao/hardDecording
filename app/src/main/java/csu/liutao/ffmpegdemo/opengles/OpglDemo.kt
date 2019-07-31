@@ -76,35 +76,11 @@ class OpglDemo : AppCompatActivity() {
         )
 
         private lateinit var vertexBuffer: FloatBuffer
-        private lateinit var vertexString : String
-        private lateinit var fragmentString :String
-        private var vertexShader = 0
-        private var fragmentShader = 0
         private var program = 0
 
 
         init {
-            vertexBuffer = ByteBuffer.allocateDirect(vertexs.size * 4)
-                .order(ByteOrder.nativeOrder())
-                .asFloatBuffer()
-            vertexBuffer.position(0)
-            vertexBuffer.put(vertexs)
-        }
-
-        private fun checkCompileShaderInfo (shader : Int) {
-            var status = IntArray(1)
-            GLES30.glGetShaderiv(shader, GLES30.GL_SHADER_COMPILER, status, 0)
-            Utils.log("shader "+ shader +", result ="+ status[0] +", compile info ="+ GLES30.glGetShaderInfoLog(shader))
-        }
-
-        private fun checkProgramLinkInfo(pg : Int) {
-            var status = IntArray(1)
-            GLES30.glGetProgramiv(pg, GLES30.GL_LINK_STATUS, status, 0)
-            Utils.log("program "+ pg  +", result ="+ status[0] + ", info =" + GLES30.glGetProgramInfoLog(pg))
-
-            GLES30.glValidateProgram(pg)
-            GLES30.glGetProgramiv(pg, GLES30.GL_VALIDATE_STATUS, status, 0)
-            Utils.log("program "+ pg  +", result ="+ status[0] + ", info =" + GLES30.glGetProgramInfoLog(pg))
+            vertexBuffer = GlUtils.getDirectFloatBuffer(vertexs)
         }
 
 
@@ -146,34 +122,23 @@ class OpglDemo : AppCompatActivity() {
 
         override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
             GLES30.glViewport(0, 0, width, height)
+            val omFloats = FloatArray(16)
             val ratio = if (height < width) width.toFloat() / height else height.toFloat() / width
             if (height > width) {
-                Matrix.orthoM(floats, 0, -1f, 1f, -ratio, ratio, -1f, 1f)
+                Matrix.orthoM(omFloats, 0, -1f, 1f, -ratio, ratio, -1f, 1f)
             } else {
-                Matrix.orthoM(floats, 0, -ratio, ratio, -1f, 1f, -1f, 1f)
+                Matrix.orthoM(omFloats, 0, -ratio, ratio, -1f, 1f, -1f, 1f)
             }
-            Utils.log("float ="+floats.toString())
+            val perFloats = FloatArray(16)
+            Matrix.perspectiveM(perFloats, 0, 45f, width.toFloat() / height, 1f, 10f)
+//            Matrix.setIdentityM(perFloats, 0)
+            Matrix.translateM(perFloats, 0, 0f, 0f, -3f)
+//            Matrix.rotateM(perFloats, 0, 60f, 1f, 0f, 0f)
+            Matrix.multiplyMM(floats, 0, perFloats, 0, omFloats, 0)
         }
 
         override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-            vertexString = GlUtils.readShaderStringFromRaw(context, R.raw.simple_vetex)
-            vertexShader = GLES30.glCreateShader(GLES30.GL_VERTEX_SHADER)
-            GLES30.glShaderSource(vertexShader, vertexString)
-            GLES30.glCompileShader(vertexShader)
-            checkCompileShaderInfo(vertexShader)
-
-            fragmentString = GlUtils.readShaderStringFromRaw(context, R.raw.simple_fragment)
-            fragmentShader = GLES30.glCreateShader(GLES30.GL_FRAGMENT_SHADER)
-            GLES30.glShaderSource(fragmentShader, fragmentString)
-            GLES30.glCompileShader(fragmentShader)
-            checkCompileShaderInfo(fragmentShader)
-
-            program = GLES30.glCreateProgram()
-            GLES30.glAttachShader(program, vertexShader)
-            GLES30.glAttachShader(program, fragmentShader)
-            GLES30.glLinkProgram(program)
-            checkProgramLinkInfo(program)
-
+            program = GlUtils.initProgramWithShaderResource(context, R.raw.simple_vetex, R.raw.simple_fragment)
             GLES30.glClearColor(1f, 1f, 1f, 0f)
         }
     }
