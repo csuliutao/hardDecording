@@ -5,4 +5,5 @@ import java.nio.ByteBuffer
 
 interface CodecOutputListener {
     fun output(byteBuf : ByteBuffer,bufferInfo : MediaCodec.BufferInfo)
+    fun onfinish()
 }

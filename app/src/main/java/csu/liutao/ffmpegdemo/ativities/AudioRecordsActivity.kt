@@ -25,7 +25,7 @@ class AudioRecordsActivity : AppCompatActivity() {
 
 
         adapter = RecordAdapter(this)
-        adapter.updateData(AudioMgr.mgr.getFiles())
+        adapter.updateData(AudioMgr.mgr.getValidVudioFile())
 
         recyclerView = findViewById(R.id.recycle_view)
         recyclerView.layoutManager = LinearLayoutManager(this)
@@ -37,10 +37,16 @@ class AudioRecordsActivity : AppCompatActivity() {
             override fun onSucess(path : String) {
                 if (!MediaMgr.instance.saveRecordFile(path)) return
                 runOnUiThread {
-                    adapter.updateData(AudioMgr.mgr.getFiles())
+                    adapter.updateData(AudioMgr.mgr.getValidVudioFile())
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        AudioRecordMgr.instance.prapare()
+        AudioTrackMgr.instance.prapare()
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
@@ -48,6 +54,12 @@ class AudioRecordsActivity : AppCompatActivity() {
         if (requestCode == Utils.AUDIO_REQUESE_CODE) {
             if (grantResults[0] != PackageManager.PERMISSION_GRANTED) finish()
         }
+    }
+
+    override fun onBackPressed() {
+        super.onBackPressed()
+        AudioRecordMgr.instance.pause()
+        AudioTrackMgr.instance.pause()
     }
 
     override fun onDestroy() {

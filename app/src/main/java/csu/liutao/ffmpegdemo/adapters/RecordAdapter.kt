@@ -34,6 +34,7 @@ class RecordAdapter(var context: Activity): RecyclerView.Adapter<RecordAdapter.V
     }
 
     fun updateData(list : List<File>) {
+        if (list.size <= 0) return
         files.clear()
         files.addAll(list)
         notifyDataSetChanged()

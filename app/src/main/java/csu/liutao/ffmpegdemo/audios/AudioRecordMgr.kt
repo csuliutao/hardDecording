@@ -45,17 +45,18 @@ class AudioRecordMgr private constructor(){
 
     private val listener = object : CodecOutputListener {
         override fun output(byteBuf: ByteBuffer, bufferInfo: MediaCodec.BufferInfo) {
-            if (!isRecording) {
-                fos.close()
-                encodeMgr.resetQueue()
-                return
-            }
             val bytes = ByteArray(bufferInfo.size)
             byteBuf.get(bytes, bufferInfo.offset, bufferInfo.size)
-
             AudioMgr.mgr.addADTStoPacket(headerByte, 7 + bytes.size)
             fos.write(headerByte)
             fos.write(bytes)
+        }
+
+        override fun onfinish() {
+            if (!isRecording) return
+            isRecording = false
+            fos.close()
+            AudioRecordMgr.instance.callback.onSucess(file.canonicalPath)
         }
     }
 
@@ -74,15 +75,6 @@ class AudioRecordMgr private constructor(){
 
 
     fun paly() {
-        if (audioRecord == null) {
-            audioRecord = AudioRecord(
-                AudioMgr.AUDIO_SOURCE,
-                AudioMgr.SAMPLE_RATE,
-                AudioMgr.CHANNEL_CONFIG,
-                AudioMgr.AUDIO_FORMAT,
-                bufferSize)
-        }
-
         curState = RecordState.PLAY
         if (!isRecording) {
             isRecording = true
@@ -105,15 +97,25 @@ class AudioRecordMgr private constructor(){
         }
     }
 
+    fun prapare() {
+        if (audioRecord == null) {
+            audioRecord = AudioRecord(
+                AudioMgr.AUDIO_SOURCE,
+                AudioMgr.SAMPLE_RATE,
+                AudioMgr.CHANNEL_CONFIG,
+                AudioMgr.AUDIO_FORMAT,
+                bufferSize)
+        }
+    }
+
     fun pause() {
-        curState = RecordState.PAUSE
-        isRecording = false
+        if (!isRecording) return
         audioRecord!!.stop()
-        AudioRecordMgr.instance.callback.onSucess(file.canonicalPath)
+        encodeMgr.release()
+        curState = RecordState.PAUSE
     }
 
     fun release() {
-        encodeMgr.release()
         audioRecord?.release()
         audioRecord = null
     }

@@ -41,6 +41,13 @@ class AudioMgr private constructor(){
         return files.asList()
     }
 
+    fun getValidVudioFile() : List<File> {
+        val result = getFiles()
+        return result.filter {
+            file ->  file.exists() && file.length() > 0
+        }
+    }
+
     // 音、视频单独编码需要格式头，一起则不需要
     fun addADTStoPacket(packet: ByteArray, packetLen: Int) {
         val profile = KEY_AAC_PROFILE // AAC LC
