@@ -1,4 +1,4 @@
-package csu.liutao.ffmpegdemo.opengles
+package csu.liutao.ffmpegdemo.opgls
 
 import android.content.Context
 import java.nio.FloatBuffer

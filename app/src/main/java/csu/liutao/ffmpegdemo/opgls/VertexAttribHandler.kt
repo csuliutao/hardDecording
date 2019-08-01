@@ -1,6 +1,5 @@
-package csu.liutao.ffmpegdemo.opengles
+package csu.liutao.ffmpegdemo.opgls
 
-import android.content.Context
 import android.opengl.GLES30
 import android.util.SparseArray
 import androidx.core.util.containsKey

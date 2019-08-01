@@ -1,4 +1,4 @@
-package csu.liutao.ffmpegdemo.opengles
+package csu.liutao.ffmpegdemo.opgls
 
 import android.app.ActivityManager
 import android.content.Context
@@ -120,7 +120,7 @@ class GlUtils private constructor(){
             GLUtils.texImage2D(GL_TEXTURE_2D, 0, bitmap, 0)
             bitmap.recycle()
             glGenerateMipmap(GL_TEXTURE_2D)
-            glBindTexture(GL_TEXTURE_2D, 0)
+            glBindTexture(GL_TEXTURE_2D, ids[0])
             return ids[0]
         }
 

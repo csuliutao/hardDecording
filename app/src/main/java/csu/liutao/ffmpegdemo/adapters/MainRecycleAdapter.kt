@@ -9,7 +9,7 @@ import android.widget.Button
 import androidx.recyclerview.widget.RecyclerView
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.ativities.*
-import csu.liutao.ffmpegdemo.opengles.OpglDemo
+import csu.liutao.ffmpegdemo.opgls.OpglBaseActivity
 
 class MainRecycleAdapter(val context : Context): RecyclerView.Adapter<MainRecycleAdapter.MainHolder>() {
     private val decs = ArrayList<String>()
@@ -33,8 +33,11 @@ class MainRecycleAdapter(val context : Context): RecyclerView.Adapter<MainRecycl
         decs.add("aac+h264 音视频录制播放")
         intents.add(Intent(context, MediasActivity::class.java))
 
-        decs.add("opengl es 使用")
-        intents.add(Intent(context, OpglDemo::class.java))
+        decs.add("opengl es 学习使用")
+        intents.add(Intent(context, OpglBaseActivity::class.java))
+
+        decs.add("opengl es 图片展示")
+        intents.add(Intent(context, OpglImageActivity::class.java))
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainHolder {

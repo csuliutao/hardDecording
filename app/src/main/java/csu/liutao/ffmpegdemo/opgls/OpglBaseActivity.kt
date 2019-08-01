@@ -1,4 +1,4 @@
-package csu.liutao.ffmpegdemo.opengles
+package csu.liutao.ffmpegdemo.opgls
 
 import android.opengl.GLSurfaceView
 import android.os.Bundle
@@ -6,7 +6,7 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 
 
-class OpglDemo : AppCompatActivity() {
+open class OpglBaseActivity : AppCompatActivity() {
     private var glView : GLSurfaceView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,13 +24,17 @@ class OpglDemo : AppCompatActivity() {
         glView?.onPause()
     }
 
+    open protected fun getRender() : GLSurfaceView.Renderer {
+        return TextureRender(this)
+    }
+
 
     private fun initGLView() {
         if (GlUtils.isSupportGLVersion(this)) {
             glView = GLSurfaceView(this)
             glView!!.setEGLContextClientVersion(3)
 //            glView!!.setRenderer(SimpleRender(this))
-            glView!!.setRenderer(TextureRender(this))
+            glView!!.setRenderer(getRender())
             glView!!.preserveEGLContextOnPause = true
             setContentView(glView)
         } else {
