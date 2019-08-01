@@ -7,7 +7,7 @@ import java.nio.ByteBuffer
 class AudioTrackMgr private constructor() {
     private lateinit var curFile: File
     private var minBuffer: Int = 0
-    private lateinit var decoder: AudioDecoder
+    private var decoder: AudioDecoder? = null
     private var audioTrack: AudioTrack? = null
 
     lateinit var pauseListener: AudioDecoder.FinishListener
@@ -46,8 +46,7 @@ class AudioTrackMgr private constructor() {
     }
 
     fun pause() {
-        if (audioTrack?.playState != AudioTrack.PLAYSTATE_PLAYING) return
-        decoder.pause()
+        decoder?.pause()
         audioTrack?.pause()
     }
 
@@ -60,7 +59,7 @@ class AudioTrackMgr private constructor() {
     }
 
     fun release() {
-        decoder.release()
+        decoder?.release()
         audioTrack?.release()
         audioTrack = null
     }
