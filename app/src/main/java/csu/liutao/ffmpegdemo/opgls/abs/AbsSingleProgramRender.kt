@@ -1,6 +1,5 @@
-package csu.liutao.ffmpegdemo.opgls
+package csu.liutao.ffmpegdemo.opgls.abs
 
-import android.content.Context
 import android.opengl.GLES30.*
 import android.opengl.GLSurfaceView
 import javax.microedition.khronos.egl.EGLConfig

@@ -1,9 +1,12 @@
-package csu.liutao.ffmpegdemo.opgls
+package csu.liutao.ffmpegdemo.opgls.programs
 
 import android.content.Context
 import android.opengl.GLES30.*
 import android.opengl.Matrix
 import csu.liutao.ffmpegdemo.R
+import csu.liutao.ffmpegdemo.opgls.GlUtils
+import csu.liutao.ffmpegdemo.opgls.VertexAttribHandler
+import csu.liutao.ffmpegdemo.opgls.abs.IProgram
 import java.nio.FloatBuffer
 
 class TableProgram : IProgram {
@@ -33,10 +36,15 @@ class TableProgram : IProgram {
     }
 
     override fun prepare(context: Context, vetexId: Int, fragmentId: Int) {
-        curProgram = GlUtils.initProgramWithShaderResource(context, vetexId, fragmentId)
+        curProgram =
+            GlUtils.initProgramWithShaderResource(context, vetexId, fragmentId)
         attrHandler.addBuffer(vetexs)
-        attrHandler.addLocationInfo(POSITION, VertexAttribHandler.AttribInfo(4, GL_FLOAT, 6 * 4))
-        attrHandler.addLocationInfo(TEXCOORD, VertexAttribHandler.AttribInfo(2, GL_FLOAT, 6 * 4))
+        attrHandler.addLocationInfo(POSITION,
+            VertexAttribHandler.AttribInfo(4, GL_FLOAT, 6 * 4)
+        )
+        attrHandler.addLocationInfo(TEXCOORD,
+            VertexAttribHandler.AttribInfo(2, GL_FLOAT, 6 * 4)
+        )
         textureId = GlUtils.loadTexture(context, R.drawable.beatiful)
     }
 

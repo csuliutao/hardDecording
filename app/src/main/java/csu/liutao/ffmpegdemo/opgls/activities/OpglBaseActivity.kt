@@ -1,9 +1,11 @@
-package csu.liutao.ffmpegdemo.opgls
+package csu.liutao.ffmpegdemo.opgls.activities
 
 import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import csu.liutao.ffmpegdemo.opgls.GlUtils
+import csu.liutao.ffmpegdemo.opgls.renders.TextureRender
 
 
 open class OpglBaseActivity : AppCompatActivity() {

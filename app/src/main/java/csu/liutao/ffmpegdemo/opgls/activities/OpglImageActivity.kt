@@ -1,14 +1,13 @@
-package csu.liutao.ffmpegdemo.ativities
+package csu.liutao.ffmpegdemo.opgls.activities
 
 import android.content.Context
 import android.opengl.GLSurfaceView
 import csu.liutao.ffmpegdemo.R
-import csu.liutao.ffmpegdemo.opgls.AbsSingleProgramRender
-import csu.liutao.ffmpegdemo.opgls.IProgram
-import csu.liutao.ffmpegdemo.opgls.ImgProgram
-import csu.liutao.ffmpegdemo.opgls.OpglBaseActivity
+import csu.liutao.ffmpegdemo.opgls.abs.AbsSingleProgramRender
+import csu.liutao.ffmpegdemo.opgls.abs.IProgram
+import csu.liutao.ffmpegdemo.opgls.programs.ImgProgram
 
-class OpglImageActivity :OpglBaseActivity() {
+class OpglImageActivity : OpglBaseActivity() {
     override fun getRender(): GLSurfaceView.Renderer {
         return ImageRender(this)
     }

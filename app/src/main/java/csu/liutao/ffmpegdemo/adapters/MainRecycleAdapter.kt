@@ -9,7 +9,9 @@ import android.widget.Button
 import androidx.recyclerview.widget.RecyclerView
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.ativities.*
-import csu.liutao.ffmpegdemo.opgls.OpglBaseActivity
+import csu.liutao.ffmpegdemo.opgls.activities.OpglBaseActivity
+import csu.liutao.ffmpegdemo.opgls.activities.OpglImageActivity
+import csu.liutao.ffmpegdemo.opgls.activities.OpglPictureActivity
 
 class MainRecycleAdapter(val context : Context): RecyclerView.Adapter<MainRecycleAdapter.MainHolder>() {
     private val decs = ArrayList<String>()
@@ -38,6 +40,9 @@ class MainRecycleAdapter(val context : Context): RecyclerView.Adapter<MainRecycl
 
         decs.add("opengl es 图片展示")
         intents.add(Intent(context, OpglImageActivity::class.java))
+
+        decs.add("opengl es 相机拍照")
+        intents.add(Intent(context, OpglPictureActivity::class.java))
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainHolder {

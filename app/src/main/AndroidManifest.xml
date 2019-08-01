@@ -39,9 +39,11 @@
 
         <activity android:name=".ativities.MediaPlayerActivity" android:theme="@style/FullScreen"/>
 
-        <activity android:name=".opgls.OpglBaseActivity" android:theme="@style/FullScreen"/>
+        <activity android:name=".opgls.activities.OpglBaseActivity" android:theme="@style/FullScreen"/>
 
-        <activity android:name=".ativities.OpglImageActivity" android:theme="@style/FullScreen"/>
+        <activity android:name=".opgls.activities.OpglImageActivity" android:theme="@style/FullScreen"/>
+
+        <activity android:name=".opgls.activities.OpglPictureActivity" android:theme="@style/FullScreen"/>
 
     </application>
 

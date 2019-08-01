@@ -1,11 +1,14 @@
-package csu.liutao.ffmpegdemo.opgls
+package csu.liutao.ffmpegdemo.opgls.programs
 
 import android.content.Context
 import android.opengl.GLES30
 import csu.liutao.ffmpegdemo.R
+import csu.liutao.ffmpegdemo.opgls.GlUtils
+import csu.liutao.ffmpegdemo.opgls.VertexAttribHandler
+import csu.liutao.ffmpegdemo.opgls.abs.IProgram
 import java.nio.FloatBuffer
 
-class SimpleProgram: IProgram{
+class SimpleProgram: IProgram {
     val V_POSION = 0
     val V_COLOE = 1
     val V_SIZE = 2
@@ -42,10 +45,19 @@ class SimpleProgram: IProgram{
     }
 
     override fun prepare(context: Context, vetexId: Int, fragmentId: Int) {
-        curProgram = GlUtils.initProgramWithShaderResource(context, R.raw.simple_vetex, R.raw.simple_fragment)
-        val pInfo = VertexAttribHandler.AttribInfo(POSITION_DIMENSION, GLES30.GL_FLOAT, STRIDE_NUM * 4 )
+        curProgram = GlUtils.initProgramWithShaderResource(
+            context,
+            R.raw.simple_vetex,
+            R.raw.simple_fragment
+        )
+        val pInfo = VertexAttribHandler.AttribInfo(
+            POSITION_DIMENSION,
+            GLES30.GL_FLOAT,
+            STRIDE_NUM * 4
+        )
         program.addLocationInfo(V_POSION, pInfo)
-        val cInfo = VertexAttribHandler.AttribInfo(COLOR_DIMENSION, GLES30.GL_FLOAT, STRIDE_NUM * 4)
+        val cInfo =
+            VertexAttribHandler.AttribInfo(COLOR_DIMENSION, GLES30.GL_FLOAT, STRIDE_NUM * 4)
         program.addLocationInfo(V_COLOE, cInfo)
         program.addBuffer(vertexBuffer)
 
@@ -75,6 +87,6 @@ class SimpleProgram: IProgram{
     }
 
     override fun initScreenSize(width: Int, height: Int) {
-        GlUtils.getBase3DMatrix(floats, width,height)
+        GlUtils.getBase3DMatrix(floats, width, height)
     }
 }

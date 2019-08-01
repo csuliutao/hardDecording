@@ -1,9 +1,12 @@
-package csu.liutao.ffmpegdemo.opgls
+package csu.liutao.ffmpegdemo.opgls.programs
 
 import android.content.Context
 import java.nio.FloatBuffer
 import android.opengl.GLES30.*
 import android.opengl.Matrix
+import csu.liutao.ffmpegdemo.opgls.GlUtils
+import csu.liutao.ffmpegdemo.opgls.VertexAttribHandler
+import csu.liutao.ffmpegdemo.opgls.abs.IProgram
 
 class MalletProgram : IProgram {
     val matrix = 0
@@ -25,10 +28,13 @@ class MalletProgram : IProgram {
     }
 
     override fun prepare(context: Context, vetexId: Int, fragmentId: Int) {
-        curProgram = GlUtils.initProgramWithShaderResource(context, vetexId, fragmentId)
+        curProgram =
+            GlUtils.initProgramWithShaderResource(context, vetexId, fragmentId)
         attrHandler.addBuffer(vetexs)
         attrHandler.addLocationInfo(pos, VertexAttribHandler.AttribInfo(4, GL_FLOAT, 7 * 4))
-        attrHandler.addLocationInfo(color, VertexAttribHandler.AttribInfo(3, GL_FLOAT, 7 * 4))
+        attrHandler.addLocationInfo(color,
+            VertexAttribHandler.AttribInfo(3, GL_FLOAT, 7 * 4)
+        )
     }
 
     override fun draw() {

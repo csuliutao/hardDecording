@@ -1,8 +1,11 @@
-package csu.liutao.ffmpegdemo.opgls
+package csu.liutao.ffmpegdemo.opgls.programs
 
 import android.content.Context
 import android.opengl.GLES30.*
 import csu.liutao.ffmpegdemo.R
+import csu.liutao.ffmpegdemo.opgls.GlUtils
+import csu.liutao.ffmpegdemo.opgls.VertexAttribHandler
+import csu.liutao.ffmpegdemo.opgls.abs.IProgram
 
 class ImgProgram : IProgram {
     val pos = 0
@@ -29,11 +32,16 @@ class ImgProgram : IProgram {
 
 
     override fun prepare(context: Context, vetexId: Int, fragmentId: Int) {
-        curProgram = GlUtils.initProgramWithShaderResource(context, vetexId, fragmentId)
+        curProgram =
+            GlUtils.initProgramWithShaderResource(context, vetexId, fragmentId)
         attribHandler.addBuffer(vertexs)
 
-        attribHandler.addLocationInfo(pos, VertexAttribHandler.AttribInfo(2, GL_FLOAT, 4 * 4))
-        attribHandler.addLocationInfo(coord, VertexAttribHandler.AttribInfo(2, GL_FLOAT, 4 * 4))
+        attribHandler.addLocationInfo(pos,
+            VertexAttribHandler.AttribInfo(2, GL_FLOAT, 4 * 4)
+        )
+        attribHandler.addLocationInfo(coord,
+            VertexAttribHandler.AttribInfo(2, GL_FLOAT, 4 * 4)
+        )
         textureId = GlUtils.loadTexture(context, R.drawable.beatiful)
     }
 

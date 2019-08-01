@@ -1,4 +1,4 @@
-package csu.liutao.ffmpegdemo.opgls
+package csu.liutao.ffmpegdemo.opgls.abs
 
 import android.content.Context
 
