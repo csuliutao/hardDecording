@@ -9,8 +9,8 @@ import android.view.MotionEvent
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import csu.liutao.ffmpegdemo.Utils
-import csu.liutao.ffmpegdemo.ativities.SurfaceImgActivity
 import csu.liutao.ffmpegdemo.opgls.GlUtils
+import csu.liutao.ffmpegdemo.opgls.OpglFileManger
 import csu.liutao.ffmpegdemo.opgls.renders.CameraRender
 
 class OpglPictureActivity : AppCompatActivity() {
@@ -19,6 +19,7 @@ class OpglPictureActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        OpglFileManger.instance.initDir(this, true)
         if (Utils.checkCameraPermission(this)) initContentView()
     }
 
@@ -57,7 +58,7 @@ class OpglPictureActivity : AppCompatActivity() {
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         render?.save(object : CameraRender.OnSavePictureListener {
             override fun onSave(sucess: Boolean) {
-                this@OpglPictureActivity.startActivity(Intent(this@OpglPictureActivity, SurfaceImgActivity::class.java))
+                this@OpglPictureActivity.startActivity(Intent(this@OpglPictureActivity, OpglImageActivity::class.java))
             }
         })
         return true

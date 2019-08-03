@@ -15,8 +15,8 @@ import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.opgls.GlUtils
 import csu.liutao.ffmpegdemo.opgls.programs.CameraProgram
 import java.io.FileOutputStream
-import java.nio.IntBuffer
 import android.graphics.Bitmap
+import csu.liutao.ffmpegdemo.opgls.OpglFileManger
 import csu.liutao.ffmpegdemo.opgls.ReadPixesConvert
 
 
@@ -41,14 +41,14 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
 
     override fun onDrawFrame(gl: GL10?) {
         if (isSaved) return
-        glClear(GL_COLOR_BUFFER_BIT)
-        program.onDrawFrame()
         if (saveListener != null) {
             savePicture()
             saveListener!!.onSave(true)
             isSaved = true
             return
         }
+        glClear(GL_COLOR_BUFFER_BIT)
+        program.onDrawFrame()
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -108,7 +108,7 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
 
     fun savePicture() {
         PictureMgr.instance.initDir(context)
-        val newFile = PictureMgr.instance.getFile()
+        val newFile = OpglFileManger.instance.getFile(true)
         val outputStream = FileOutputStream(newFile)
 
         val convert = ReadPixesConvert()

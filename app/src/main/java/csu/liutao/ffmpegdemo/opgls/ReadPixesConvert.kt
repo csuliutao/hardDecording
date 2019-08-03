@@ -1,6 +1,7 @@
 package csu.liutao.ffmpegdemo.opgls
 
 import android.opengl.GLES30.*
+import java.lang.Exception
 import java.nio.IntBuffer
 
 // 为了多次相同类型转换节约性能
@@ -22,6 +23,7 @@ class ReadPixesConvert {
     fun convertRGBA180() : IntArray{
         glReadPixels(0, 0, curWidth, curHeight, GL_RGBA, GL_UNSIGNED_BYTE, byteBuffer)
         val modelData = byteBuffer.array()
+        if (modelData.size != size) throw Exception("length error")
         val length = size -1
         var baseOffset = 0
         for (i in 0 until curHeight) {
@@ -30,8 +32,22 @@ class ReadPixesConvert {
                 result[length - baseOffset - curWidth + k + 1] = modelData[baseOffset + k]
             }
         }
+        convertRgbaToArgb(result)
         System.arraycopy(result, 0, modelData, 0, size)
         return modelData
+    }
+
+    fun convertRgbaToArgb(src : IntArray) {
+        val step = 4
+        val curLen = src.size / step
+        var srca = -1
+        for (index in 0 until curLen) {
+            srca = src[index * step + 3]
+            src[index * step + 3] = src[index * step + 2]
+            src[index * step + 2] = src[index * step + 1]
+            src[index * step + 1] = src[index * step]
+            src[index * step] = srca
+        }
     }
 
 }

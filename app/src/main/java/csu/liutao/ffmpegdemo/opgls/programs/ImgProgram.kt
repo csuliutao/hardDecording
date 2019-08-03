@@ -4,6 +4,7 @@ import android.content.Context
 import android.opengl.GLES30.*
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.opgls.GlUtils
+import csu.liutao.ffmpegdemo.opgls.OpglFileManger
 import csu.liutao.ffmpegdemo.opgls.VertexAttribHandler
 import csu.liutao.ffmpegdemo.opgls.abs.IProgram
 
@@ -11,10 +12,10 @@ class ImgProgram : IProgram {
     val pos = 0
     val coord = 1
     val unit = 2
-    val red = 3
+    /*val red = 3
     val green = 4
     val blue = 5
-    val alpha = 6
+    val alpha = 6*/
 
     val floats = floatArrayOf(
         -1f, 1f, 0f, 0f,
@@ -42,7 +43,7 @@ class ImgProgram : IProgram {
         attribHandler.addLocationInfo(coord,
             VertexAttribHandler.AttribInfo(2, GL_FLOAT, 4 * 4)
         )
-        textureId = GlUtils.loadTexture(context, R.drawable.beatiful)
+        textureId = GlUtils.loadTexture(context, OpglFileManger.instance.getLastPic())
     }
 
     override fun draw() {
@@ -52,10 +53,10 @@ class ImgProgram : IProgram {
         glBindTexture(GL_TEXTURE_2D, textureId)
         glUniform1i(unit, 0)
 
-        glUniform1f(red, 0.2f)
+        /*glUniform1f(red, 0.2f)
         glUniform1f(green, 0.5f)
         glUniform1f(blue, 0.9f)
-        glUniform1f(alpha, 0.7f)
+        glUniform1f(alpha, 0.7f)*/
 
         val poss = intArrayOf(pos, coord)
         attribHandler.enableAttribute(poss)

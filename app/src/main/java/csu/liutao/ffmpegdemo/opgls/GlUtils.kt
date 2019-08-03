@@ -7,8 +7,10 @@ import android.opengl.GLES11Ext.GL_TEXTURE_EXTERNAL_OES
 import android.opengl.GLES30.*
 import android.opengl.GLUtils
 import android.opengl.Matrix
+import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.Utils
 import java.io.BufferedReader
+import java.io.File
 import java.io.InputStreamReader
 import java.lang.StringBuilder
 import java.nio.ByteBuffer
@@ -114,6 +116,25 @@ class GlUtils private constructor(){
             val option = BitmapFactory.Options()
             option.inScaled = false
             val bitmap = BitmapFactory.decodeResource(contex.resources, imageId)
+
+            glGenTextures(1, ids, 0)
+            glBindTexture(GL_TEXTURE_2D, ids[0])
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+            GLUtils.texImage2D(GL_TEXTURE_2D, 0, bitmap, 0)
+            bitmap.recycle()
+            glGenerateMipmap(GL_TEXTURE_2D)
+            glBindTexture(GL_TEXTURE_2D, ids[0])
+            return ids[0]
+        }
+
+        fun loadTexture(contex : Context, file : File?) : Int {
+            val ids = IntArray(1)
+            ids[0] = -1
+
+            val option = BitmapFactory.Options()
+            option.inScaled = false
+            val bitmap = if (file == null) BitmapFactory.decodeResource(contex.resources, R.drawable.beatiful) else BitmapFactory.decodeFile(file.canonicalPath)
 
             glGenTextures(1, ids, 0)
             glBindTexture(GL_TEXTURE_2D, ids[0])
