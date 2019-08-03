@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.SurfaceTexture
 import android.opengl.GLES11Ext.GL_TEXTURE_EXTERNAL_OES
 import android.opengl.GLES30.*
-import android.opengl.Matrix
 import csu.liutao.ffmpegdemo.R
 import csu.liutao.ffmpegdemo.opgls.GlUtils
 import csu.liutao.ffmpegdemo.opgls.VertexAttribHandler

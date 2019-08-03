@@ -10,9 +10,13 @@ import javax.microedition.khronos.opengles.GL10
 import android.opengl.GLES30.*
 import android.os.Handler
 import android.view.Surface
+import csu.liutao.ffmpegdemo.PictureMgr
 import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.opgls.GlUtils
 import csu.liutao.ffmpegdemo.opgls.programs.CameraProgram
+import java.io.FileOutputStream
+import java.nio.ByteBuffer
+import java.nio.ByteOrder
 
 class CameraRender(val context: Context) : GLSurfaceView.Renderer {
     private var program = CameraProgram()
@@ -25,12 +29,17 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
 
     var listener : SurfaceTexture.OnFrameAvailableListener? = null
 
+    private var curWidth = -1
+    private var curHeight = -1
+
     override fun onDrawFrame(gl: GL10?) {
         glClear(GL_COLOR_BUFFER_BIT)
         program.onDrawFrame()
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
+        curWidth = width
+        curHeight = height
         glViewport(0, 0, width, height)
         surfaceTexture.setDefaultBufferSize(width, height)
         program.onSurfaceChanged(width, height)
@@ -72,6 +81,18 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
                 cameraSession!!.setRepeatingRequest(builder.build(), null, handler)
             }
         }, handler)
+    }
+
+    fun savePicture() {
+        PictureMgr.instance.initDir(context)
+        val newFile = PictureMgr.instance.getFile()
+        val byteBuffer = ByteBuffer.allocateDirect(curHeight * curWidth * 1).order(ByteOrder.nativeOrder())
+        glReadPixels(0, 0, curWidth, curHeight, GL_RGB, GL_UNSIGNED_BYTE, byteBuffer)
+        val outputStream = FileOutputStream(newFile)
+        val channel = outputStream.channel
+        channel.write(byteBuffer, 0)
+        channel.close()
+        outputStream.close()
     }
 
     fun release() {

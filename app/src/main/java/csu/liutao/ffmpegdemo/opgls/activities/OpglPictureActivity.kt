@@ -4,11 +4,11 @@ import android.content.pm.PackageManager
 import android.graphics.SurfaceTexture
 import android.opengl.GLSurfaceView
 import android.os.Bundle
+import android.view.MotionEvent
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.opgls.GlUtils
-import csu.liutao.ffmpegdemo.opgls.activities.OpglBaseActivity
 import csu.liutao.ffmpegdemo.opgls.renders.CameraRender
 
 class OpglPictureActivity : AppCompatActivity() {
@@ -49,6 +49,12 @@ class OpglPictureActivity : AppCompatActivity() {
             Toast.makeText(this, "not support gles 3.0", Toast.LENGTH_LONG)
             finish()
         }
+    }
+
+    override fun onTouchEvent(event: MotionEvent?): Boolean {
+        render?.savePicture()
+        finish()
+        return true
     }
 
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
