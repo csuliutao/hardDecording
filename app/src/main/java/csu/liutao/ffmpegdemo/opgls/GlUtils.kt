@@ -3,6 +3,7 @@ package csu.liutao.ffmpegdemo.opgls
 import android.app.ActivityManager
 import android.content.Context
 import android.graphics.BitmapFactory
+import android.opengl.GLES11Ext.GL_TEXTURE_EXTERNAL_OES
 import android.opengl.GLES30.*
 import android.opengl.GLUtils
 import android.opengl.Matrix
@@ -13,6 +14,7 @@ import java.lang.StringBuilder
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
+import javax.microedition.khronos.opengles.GL11Ext
 
 class GlUtils private constructor(){
 
@@ -121,6 +123,17 @@ class GlUtils private constructor(){
             bitmap.recycle()
             glGenerateMipmap(GL_TEXTURE_2D)
             glBindTexture(GL_TEXTURE_2D, ids[0])
+            return ids[0]
+        }
+
+        fun loadExternTextureId(): Int {
+            val ids = IntArray(1)
+            glGenTextures(1, ids, 0)
+            glBindTexture(GL_TEXTURE_EXTERNAL_OES, ids[0])
+            glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+            glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+
+            glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0)
             return ids[0]
         }
 
