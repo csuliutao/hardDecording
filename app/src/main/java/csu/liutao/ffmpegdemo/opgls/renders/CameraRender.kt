@@ -15,8 +15,9 @@ import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.opgls.GlUtils
 import csu.liutao.ffmpegdemo.opgls.programs.CameraProgram
 import java.io.FileOutputStream
-import java.nio.ByteBuffer
-import java.nio.ByteOrder
+import java.nio.IntBuffer
+import android.graphics.Bitmap
+
 
 class CameraRender(val context: Context) : GLSurfaceView.Renderer {
     private var program = CameraProgram()
@@ -32,9 +33,21 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
     private var curWidth = -1
     private var curHeight = -1
 
+    @Volatile
+    private var saveListener : OnSavePictureListener? = null
+
+    private var isSaved = false
+
     override fun onDrawFrame(gl: GL10?) {
+        if (isSaved) return
         glClear(GL_COLOR_BUFFER_BIT)
         program.onDrawFrame()
+        if (saveListener != null) {
+            savePicture()
+            saveListener!!.onSave(true)
+            isSaved = true
+            return
+        }
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -83,15 +96,20 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
         }, handler)
     }
 
+    fun save(listener : OnSavePictureListener) {
+        this.saveListener = listener
+    }
+
     fun savePicture() {
         PictureMgr.instance.initDir(context)
         val newFile = PictureMgr.instance.getFile()
-        val byteBuffer = ByteBuffer.allocateDirect(curHeight * curWidth * 1).order(ByteOrder.nativeOrder())
-        glReadPixels(0, 0, curWidth, curHeight, GL_RGB, GL_UNSIGNED_BYTE, byteBuffer)
         val outputStream = FileOutputStream(newFile)
-        val channel = outputStream.channel
-        channel.write(byteBuffer, 0)
-        channel.close()
+
+        val byteBuffer = IntBuffer.allocate(curHeight * curWidth * 1)
+        glReadPixels(0, 0, curWidth, curHeight, GL_RGBA, GL_UNSIGNED_BYTE, byteBuffer)
+        val modelData = byteBuffer.array()
+        val modelBitmap = Bitmap.createBitmap(modelData, curWidth, curHeight, Bitmap.Config.ARGB_8888)
+        modelBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
         outputStream.close()
     }
 
@@ -100,5 +118,9 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
         cameraSession = null
         cameraDevice?.close()
         cameraDevice = null
+    }
+
+    interface OnSavePictureListener {
+        fun onSave(sucess : Boolean)
     }
 }

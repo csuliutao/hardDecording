@@ -52,8 +52,11 @@ class OpglPictureActivity : AppCompatActivity() {
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
-        render?.savePicture()
-        finish()
+        render?.save(object : CameraRender.OnSavePictureListener {
+            override fun onSave(sucess: Boolean) {
+                finish()
+            }
+        })
         return true
     }
 
