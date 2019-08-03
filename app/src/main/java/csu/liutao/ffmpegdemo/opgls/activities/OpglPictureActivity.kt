@@ -1,5 +1,6 @@
 package csu.liutao.ffmpegdemo.opgls.activities
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.SurfaceTexture
 import android.opengl.GLSurfaceView
@@ -8,6 +9,7 @@ import android.view.MotionEvent
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import csu.liutao.ffmpegdemo.Utils
+import csu.liutao.ffmpegdemo.ativities.SurfaceImgActivity
 import csu.liutao.ffmpegdemo.opgls.GlUtils
 import csu.liutao.ffmpegdemo.opgls.renders.CameraRender
 
@@ -23,6 +25,7 @@ class OpglPictureActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         glView?.onResume()
+        render?.resume()
     }
 
     override fun onPause() {
@@ -54,7 +57,7 @@ class OpglPictureActivity : AppCompatActivity() {
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         render?.save(object : CameraRender.OnSavePictureListener {
             override fun onSave(sucess: Boolean) {
-                finish()
+                this@OpglPictureActivity.startActivity(Intent(this@OpglPictureActivity, SurfaceImgActivity::class.java))
             }
         })
         return true

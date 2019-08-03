@@ -17,6 +17,7 @@ import csu.liutao.ffmpegdemo.opgls.programs.CameraProgram
 import java.io.FileOutputStream
 import java.nio.IntBuffer
 import android.graphics.Bitmap
+import csu.liutao.ffmpegdemo.opgls.ReadPixesConvert
 
 
 class CameraRender(val context: Context) : GLSurfaceView.Renderer {
@@ -96,6 +97,11 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
         }, handler)
     }
 
+    fun resume() {
+        isSaved = false
+        saveListener = null
+    }
+
     fun save(listener : OnSavePictureListener) {
         this.saveListener = listener
     }
@@ -108,6 +114,11 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
         val byteBuffer = IntBuffer.allocate(curHeight * curWidth * 1)
         glReadPixels(0, 0, curWidth, curHeight, GL_RGBA, GL_UNSIGNED_BYTE, byteBuffer)
         val modelData = byteBuffer.array()
+
+        val convert = ReadPixesConvert()
+        convert.init(modelData.size, curWidth, curHeight)
+        convert.convertRGBA180(modelData)
+
         val modelBitmap = Bitmap.createBitmap(modelData, curWidth, curHeight, Bitmap.Config.ARGB_8888)
         modelBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
         outputStream.close()
