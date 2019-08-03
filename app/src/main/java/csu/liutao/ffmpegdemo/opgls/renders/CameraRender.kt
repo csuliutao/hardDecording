@@ -111,13 +111,9 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
         val newFile = PictureMgr.instance.getFile()
         val outputStream = FileOutputStream(newFile)
 
-        val byteBuffer = IntBuffer.allocate(curHeight * curWidth * 1)
-        glReadPixels(0, 0, curWidth, curHeight, GL_RGBA, GL_UNSIGNED_BYTE, byteBuffer)
-        val modelData = byteBuffer.array()
-
         val convert = ReadPixesConvert()
-        convert.init(modelData.size, curWidth, curHeight)
-        convert.convertRGBA180(modelData)
+        convert.init(curWidth, curHeight)
+        val modelData = convert.convertRGBA180()
 
         val modelBitmap = Bitmap.createBitmap(modelData, curWidth, curHeight, Bitmap.Config.ARGB_8888)
         modelBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
