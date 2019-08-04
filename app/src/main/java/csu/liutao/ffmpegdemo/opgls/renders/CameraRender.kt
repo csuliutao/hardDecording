@@ -18,9 +18,10 @@ import java.io.FileOutputStream
 import android.graphics.Bitmap
 import csu.liutao.ffmpegdemo.opgls.OpglFileManger
 import csu.liutao.ffmpegdemo.opgls.ReadPixesConvertPic
+import csu.liutao.ffmpegdemo.opgls.ReadPixesConvertVedio
 
 
-class CameraRender(val context: Context) : GLSurfaceView.Renderer {
+class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceView.Renderer {
     private var program = CameraProgram()
     private var textureId = -1
     private lateinit var surfaceTexture: SurfaceTexture
@@ -37,13 +38,18 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
     @Volatile
     private var saveListener : OnSavePictureListener? = null
 
+    @Volatile
     private var isSaved = false
 
-    private val convert = ReadPixesConvertPic()
+    @Volatile
+    private var recordListener : OnSaveFrameListener? = null
+
+    private lateinit var picConvert : ReadPixesConvertPic
+    private lateinit var videoConvert : ReadPixesConvertVedio
 
     override fun onDrawFrame(gl: GL10?) {
-        if (isSaved) return
-        if (saveListener != null) {
+        if (isSaved && isPic) return
+        if (isPic && saveListener != null) {
             savePicture()
             saveListener!!.onSave(true)
             isSaved = true
@@ -51,6 +57,13 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
         }
         glClear(GL_COLOR_BUFFER_BIT)
         program.onDrawFrame()
+        if (!isPic && recordListener != null) {
+            recordListener!!.onSave(videoConvert.convert180YUV())
+        }
+    }
+
+    private fun saveRecordFrame() {
+
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -59,7 +72,13 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
         glViewport(0, 0, width, height)
         surfaceTexture.setDefaultBufferSize(width, height)
         program.onSurfaceChanged(width, height)
-        convert.init(curWidth, curHeight)
+        if (isPic) {
+            picConvert = ReadPixesConvertPic()
+            picConvert.init(curWidth, curHeight)
+        } else {
+            videoConvert = ReadPixesConvertVedio()
+            videoConvert.init(curWidth, curHeight)
+        }
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
@@ -113,9 +132,13 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
         PictureMgr.instance.initDir(context)
         val newFile = OpglFileManger.instance.getFile(true)
         val outputStream = FileOutputStream(newFile)
-        val modelBitmap = Bitmap.createBitmap(convert.convertRGBA180(), curWidth, curHeight, Bitmap.Config.ARGB_8888)
+        val modelBitmap = Bitmap.createBitmap(picConvert.convertRGBA180(), curWidth, curHeight, Bitmap.Config.ARGB_8888)
         modelBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
         outputStream.close()
+    }
+
+    fun startRecord(listener : OnSaveFrameListener) {
+        recordListener = listener
     }
 
     fun release() {
@@ -127,5 +150,9 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
 
     interface OnSavePictureListener {
         fun onSave(sucess : Boolean)
+    }
+
+    interface OnSaveFrameListener {
+        fun onSave(bytes : ByteArray)
     }
 }

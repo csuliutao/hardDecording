@@ -66,7 +66,7 @@ class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback, 
             aacThread?.quitSafely()
             aacThread = null
             avcThread?.quitSafely()
-            avcThread == null
+            avcThread = null
         }
     }
 }
