@@ -46,9 +46,10 @@ class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceV
 
     private lateinit var picConvert : ReadPixesConvertPic
     private lateinit var videoConvert : ReadPixesConvertVedio
+    private var sizeListener: OnSizeChangeListener? = null
 
     override fun onDrawFrame(gl: GL10?) {
-        if (isSaved && isPic) return
+        if (isSaved) return
         if (isPic && saveListener != null) {
             savePicture()
             saveListener!!.onSave(true)
@@ -60,10 +61,6 @@ class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceV
         if (!isPic && recordListener != null) {
             recordListener!!.onSave(videoConvert.convert180YUV())
         }
-    }
-
-    private fun saveRecordFrame() {
-
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
@@ -79,6 +76,7 @@ class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceV
             videoConvert = ReadPixesConvertVedio()
             videoConvert.init(curWidth, curHeight)
         }
+        sizeListener?.onSizeChanged(curWidth, curHeight)
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
@@ -111,7 +109,8 @@ class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceV
 
             override fun onConfigured(session: CameraCaptureSession) {
                 cameraSession = session
-                val builder = cameraDevice!!.createCaptureRequest(CameraDevice.TEMPLATE_PREVIEW)
+                val flag = if (isPic) CameraDevice.TEMPLATE_PREVIEW else CameraDevice.TEMPLATE_RECORD
+                val builder = cameraDevice!!.createCaptureRequest(flag)
                 builder.addTarget(surface)
                 if (listener != null) surfaceTexture.setOnFrameAvailableListener(listener!!)
                 cameraSession!!.setRepeatingRequest(builder.build(), null, handler)
@@ -119,9 +118,18 @@ class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceV
         }, handler)
     }
 
+    fun setSizeChangeListener(listener: OnSizeChangeListener) {
+        sizeListener = listener
+    }
+
     fun resume() {
         isSaved = false
         saveListener = null
+    }
+
+    fun stop() {
+        cameraSession?.stopRepeating()
+        isSaved = true
     }
 
     fun save(listener : OnSavePictureListener) {
@@ -154,5 +162,9 @@ class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceV
 
     interface OnSaveFrameListener {
         fun onSave(bytes : ByteArray)
+    }
+
+    interface OnSizeChangeListener{
+        fun onSizeChanged(w : Int, h : Int)
     }
 }

@@ -23,7 +23,7 @@ class OpglFileManger private constructor(){
             picDir = context.externalCacheDir.canonicalPath + File.separator + JPEG_PATH
             file = File(picDir)
         } else {
-            picDir = context.externalCacheDir.canonicalPath + File.separator + VEDIO_PATH
+            vedioDir = context.externalCacheDir.canonicalPath + File.separator + VEDIO_PATH
             file = File(vedioDir)
         }
         if (!file.exists()) file.mkdir()

@@ -1,17 +1,17 @@
-package csu.liutao.ffmpegdemo.h264
+package csu.liutao.ffmpegdemo.opgls
 
 import android.content.Context
-import android.media.Image
 import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
-import android.view.Surface
+import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.medias.*
+import csu.liutao.ffmpegdemo.opgls.renders.CameraRender
 import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
-class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
-    private var cameraMgr : Camera2Mgr? = null
+class OpglAvcRecord(val muxer : MuxerManger , queueSize : Int = 15) {
+    private var cameraRender: CameraRender? = null
     private var codecMgr : CodecManager? = null
     private lateinit var queue : LinkedBlockingDeque<MediaInfo>
     private val lock = ReentrantReadWriteLock()
@@ -50,20 +50,10 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
         }
     }
 
-    private val imageListener = object : Camera2Mgr.ImageListener {
-        override fun handleImage(image: Image) {
-            if (codecMgr == null) {
-                val format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, image.height, image.width)
-                format.setInteger(MediaFormat.KEY_BIT_RATE, image.width * image.height * 5)
-                format.setInteger(MediaFormat.KEY_FRAME_RATE, 25)
-                format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
-                format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
-//                format.setInteger(MediaFormat.KEY_ROTATION, 90) // 只有在输出到surface时才有效
-                codecMgr = CodecManager(format, codecCallback)
-                codecMgr!!.start()
-            }
-            val srcByte = VideoMgr.instance.imageToNV2190(image)
-            queue.offer(MediaInfo(srcByte, 0, srcByte.size))
+    private val frameListener = object : CameraRender.OnSaveFrameListener {
+        override fun onSave(bytes: ByteArray) {
+            Utils.log("start codec")
+            queue.offer(MediaInfo(bytes, 0, bytes.size))
         }
     }
 
@@ -71,30 +61,39 @@ class AvcRecord(var muxer: MuxerManger, queueSize : Int = 10)  {
         queue = LinkedBlockingDeque(queueSize)
     }
 
-    fun prepare(context : Context, surface: Surface, width : Int, height: Int) {
-        cameraMgr = Camera2Mgr.Builder()
-            .surface(surface, false)
-            .imageReader(width, height, imageListener)
-            .build()
-        cameraMgr?.openCamera(context)
+    fun prepare(context : Context) : CameraRender{
+        cameraRender = CameraRender(context, false)
+        cameraRender!!.setSizeChangeListener(object : CameraRender.OnSizeChangeListener {
+            override fun onSizeChanged(width: Int, height: Int) {
+                CodecManager.start()
+                val format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, height, width)
+                format.setInteger(MediaFormat.KEY_BIT_RATE, width * height * 5)
+                format.setInteger(MediaFormat.KEY_FRAME_RATE, 25)
+                format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
+                format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
+                codecMgr = CodecManager(format, codecCallback)
+                codecMgr!!.start()
+            }
+        })
+        return cameraRender!!
     }
 
 
     fun stop() {
+        cameraRender?.stop()
         lock.writeLock().lock()
-        cameraMgr?.stop(true)
         codecMgr?.stop()
         lock.writeLock().unlock()
     }
 
     fun release() {
         lock.writeLock().lock()
-        cameraMgr?.release()
+        cameraRender?.release()
         codecMgr?.release()
         lock.writeLock().lock()
     }
 
     fun start() {
-        cameraMgr?.take()
+        cameraRender?.startRecord(frameListener)
     }
 }

@@ -13,7 +13,7 @@ class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback, 
     @Volatile
     private var isStart = false
 
-    fun start() {
+    fun start(listener : OnInputSurfaceAvaiableListener? = null) {
         val type = format.getString(MediaFormat.KEY_MIME)
         if (codeFlag == 0) {
             codec = MediaCodec.createDecoderByType(type)
@@ -25,6 +25,9 @@ class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback, 
             codec!!.setCallback(callback, getHandler(type))
         } else {
             codec!!.setCallback(callback)
+        }
+        if (listener != null) {
+            listener.onAvailiable(codec!!.createInputSurface())
         }
         isStart = true
         codec!!.start()
@@ -56,6 +59,7 @@ class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback, 
         private var avcThread : HandlerThread? = null
 
         fun start() {
+            if (aacThread != null) return
             aacThread = HandlerThread("aacThread")
             aacThread!!.start()
             avcThread = HandlerThread("avcThread")
@@ -68,5 +72,9 @@ class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback, 
             avcThread?.quitSafely()
             avcThread = null
         }
+    }
+
+    interface OnInputSurfaceAvaiableListener {
+        fun onAvailiable(surface : Surface)
     }
 }

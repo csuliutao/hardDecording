@@ -45,6 +45,10 @@
 
         <activity android:name=".opgls.activities.OpglPictureActivity" android:theme="@style/FullScreen"/>
 
+        <activity android:name=".opgls.activities.OpglVediosActivity" />
+
+        <activity android:name=".opgls.activities.OpglRecorderActivity" android:theme="@style/FullScreen" />
+
     </application>
 
 </manifest>

@@ -12,6 +12,7 @@ import csu.liutao.ffmpegdemo.ativities.*
 import csu.liutao.ffmpegdemo.opgls.activities.OpglBaseActivity
 import csu.liutao.ffmpegdemo.opgls.activities.OpglImageActivity
 import csu.liutao.ffmpegdemo.opgls.activities.OpglPictureActivity
+import csu.liutao.ffmpegdemo.opgls.activities.OpglVediosActivity
 
 class MainRecycleAdapter(val context : Context): RecyclerView.Adapter<MainRecycleAdapter.MainHolder>() {
     private val decs = ArrayList<String>()
@@ -43,6 +44,9 @@ class MainRecycleAdapter(val context : Context): RecyclerView.Adapter<MainRecycl
 
         decs.add("opengl es 相机拍照")
         intents.add(Intent(context, OpglPictureActivity::class.java))
+
+        decs.add("opengl es 音视频录制")
+        intents.add(Intent(context, OpglVediosActivity::class.java))
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MainHolder {

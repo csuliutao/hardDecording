@@ -5,13 +5,12 @@ import android.media.AudioRecord
 import android.media.MediaRecorder
 import java.lang.Exception
 
-class AudioRecordManager {
+class AudioRecordManager private constructor(){
     private val sampleRate = 44100
 
     private var bufferSize = -1
 
     private var record : AudioRecord? = null
-
 
     init {
         bufferSize = AudioRecord.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_IN_STEREO, AudioFormat.ENCODING_PCM_16BIT)

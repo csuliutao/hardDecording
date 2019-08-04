@@ -14,6 +14,5 @@ class MediasActivity : VideosActivity(){
         super.onDestroy()
         AudioTrackManager.release()
         AudioRecordManager.release()
-
     }
 }
