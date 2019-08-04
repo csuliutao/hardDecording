@@ -17,7 +17,7 @@ import csu.liutao.ffmpegdemo.opgls.programs.CameraProgram
 import java.io.FileOutputStream
 import android.graphics.Bitmap
 import csu.liutao.ffmpegdemo.opgls.OpglFileManger
-import csu.liutao.ffmpegdemo.opgls.ReadPixesConvert
+import csu.liutao.ffmpegdemo.opgls.ReadPixesConvertPic
 
 
 class CameraRender(val context: Context) : GLSurfaceView.Renderer {
@@ -39,6 +39,8 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
 
     private var isSaved = false
 
+    private val convert = ReadPixesConvertPic()
+
     override fun onDrawFrame(gl: GL10?) {
         if (isSaved) return
         if (saveListener != null) {
@@ -57,6 +59,7 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
         glViewport(0, 0, width, height)
         surfaceTexture.setDefaultBufferSize(width, height)
         program.onSurfaceChanged(width, height)
+        convert.init(curWidth, curHeight)
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
@@ -110,12 +113,7 @@ class CameraRender(val context: Context) : GLSurfaceView.Renderer {
         PictureMgr.instance.initDir(context)
         val newFile = OpglFileManger.instance.getFile(true)
         val outputStream = FileOutputStream(newFile)
-
-        val convert = ReadPixesConvert()
-        convert.init(curWidth, curHeight)
-        val modelData = convert.convertRGBA180()
-
-        val modelBitmap = Bitmap.createBitmap(modelData, curWidth, curHeight, Bitmap.Config.ARGB_8888)
+        val modelBitmap = Bitmap.createBitmap(convert.convertRGBA180(), curWidth, curHeight, Bitmap.Config.ARGB_8888)
         modelBitmap.compress(Bitmap.CompressFormat.JPEG, 100, outputStream)
         outputStream.close()
     }
