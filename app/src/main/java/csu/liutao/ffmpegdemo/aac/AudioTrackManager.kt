@@ -39,7 +39,7 @@ class AudioTrackManager private constructor() {
     }
 
     fun stop() {
-        audioTrack!!.stop()
+        audioTrack?.stop()
     }
 
     private fun release() {

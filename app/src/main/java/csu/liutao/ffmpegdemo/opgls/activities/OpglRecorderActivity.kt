@@ -4,7 +4,7 @@ import android.content.pm.PackageManager
 import android.graphics.SurfaceTexture
 import android.opengl.GLSurfaceView
 import android.os.Bundle
-import android.view.MotionEvent
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
 import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.opgls.GlUtils
@@ -36,18 +36,6 @@ class OpglRecorderActivity : AppCompatActivity() {
         }
     }
 
-    override fun onTouchEvent(event: MotionEvent?): Boolean {
-        super.onTouchEvent(event)
-        if (!isStarted) {
-            isStarted = true
-            record?.startRecord()
-        } else {
-            record?.saveRecord()
-            finish()
-        }
-        return true
-    }
-
     override fun onBackPressed() {
         super.onBackPressed()
         record?.saveRecord()
@@ -68,6 +56,15 @@ class OpglRecorderActivity : AppCompatActivity() {
         glView!!.setRenderer(render)
         glView?.renderMode = GLSurfaceView.RENDERMODE_WHEN_DIRTY
         setContentView(glView)
+        glView?.setOnClickListener(View.OnClickListener {
+            if (!isStarted) {
+                isStarted = true
+                record?.startRecord()
+            } else {
+                record?.saveRecord()
+                finish()
+            }
+        })
     }
 
     override fun onResume() {

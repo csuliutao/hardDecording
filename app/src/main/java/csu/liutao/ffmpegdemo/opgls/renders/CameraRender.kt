@@ -17,8 +17,7 @@ import csu.liutao.ffmpegdemo.opgls.programs.CameraProgram
 import java.io.FileOutputStream
 import android.graphics.Bitmap
 import csu.liutao.ffmpegdemo.opgls.OpglFileManger
-import csu.liutao.ffmpegdemo.opgls.ReadPixesConvertPic
-import csu.liutao.ffmpegdemo.opgls.ReadPixesConvertVedio
+import csu.liutao.ffmpegdemo.opgls.ReadPixesConvert
 
 
 class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceView.Renderer {
@@ -44,8 +43,7 @@ class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceV
     @Volatile
     private var recordListener : OnSaveFrameListener? = null
 
-    private lateinit var picConvert : ReadPixesConvertPic
-    private lateinit var videoConvert : ReadPixesConvertVedio
+    private lateinit var picConvert : ReadPixesConvert
     private var sizeListener: OnSizeChangeListener? = null
 
     override fun onDrawFrame(gl: GL10?) {
@@ -59,7 +57,7 @@ class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceV
         glClear(GL_COLOR_BUFFER_BIT)
         program.onDrawFrame()
         if (!isPic && recordListener != null) {
-            recordListener!!.onSave(videoConvert.convert180YUV())
+            recordListener!!.onSave(picConvert.convert180YUV())
         }
     }
 
@@ -69,13 +67,8 @@ class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceV
         glViewport(0, 0, width, height)
         surfaceTexture.setDefaultBufferSize(width, height)
         program.onSurfaceChanged(width, height)
-        if (isPic) {
-            picConvert = ReadPixesConvertPic()
-            picConvert.init(curWidth, curHeight)
-        } else {
-            videoConvert = ReadPixesConvertVedio()
-            videoConvert.init(curWidth, curHeight)
-        }
+        picConvert = ReadPixesConvert()
+        picConvert.init(curWidth, curHeight)
         sizeListener?.onSizeChanged(curWidth, curHeight)
     }
 
