@@ -1,4 +1,4 @@
-package csu.liutao.ffmpegdemo.opgls
+package csu.liutao.ffmpegdemo.medias
 
 import android.media.MediaCodec
 
@@ -10,7 +10,7 @@ class ValidStartTime {
             time = info.presentationTimeUs
             info.presentationTimeUs = 0L
         } else {
-            info.presentationTimeUs -= time;
+            info.presentationTimeUs -= time
         }
     }
 }

@@ -17,6 +17,7 @@ class AacRecordRunnable(var muxer: MuxerManger, queueSize : Int = 10) :MediaRunn
     private val lock = ReentrantReadWriteLock()
 
     private val codecCallback = object : LockCodecCallback(lock) {
+        private val time = ValidStartTime()
 
         override fun onInput(codec: MediaCodec, index: Int) {
             if (codecManager == null || !codecManager!!.isCodec()) {
@@ -36,6 +37,7 @@ class AacRecordRunnable(var muxer: MuxerManger, queueSize : Int = 10) :MediaRunn
         override fun onOutput(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
             if (codecManager == null || !codecManager!!.isCodec()) return
             val buffer = codec.getOutputBuffer(index)
+            time.checkValid(info)
             muxer.write(buffer, info, false)
             codec.releaseOutputBuffer(index, false)
         }
