@@ -16,7 +16,6 @@ import java.lang.StringBuilder
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
-import javax.microedition.khronos.opengles.GL11Ext
 
 class GlUtils private constructor(){
 
@@ -31,6 +30,7 @@ class GlUtils private constructor(){
         fun getDirectFloatBuffer(byteArray: FloatArray, offset : Int = 0, length : Int = byteArray.size) : FloatBuffer {
             val floatBuffer = ByteBuffer.allocateDirect(length * 4).order(ByteOrder.nativeOrder()).asFloatBuffer()
             floatBuffer.put(byteArray, offset, length)
+            floatBuffer.position(0)
             return floatBuffer
         }
 
@@ -155,6 +155,36 @@ class GlUtils private constructor(){
             glTexParameteri(GL_TEXTURE_EXTERNAL_OES, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
 
             glBindTexture(GL_TEXTURE_EXTERNAL_OES, 0)
+            return ids[0]
+        }
+
+        fun loadShareTextureId(width: Int, height: Int): Int {
+            val ids = IntArray(1)
+            glGenTextures(1, ids, 0)
+            glBindTexture(GL_TEXTURE_2D, ids[0])
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, null)
+            glBindTexture(GL_TEXTURE_2D, 0)
+            return ids[0]
+        }
+
+        fun loadFrameBuffer2DId(textureId : Int) : Int {
+            val ids = IntArray(1)
+            glGenFramebuffers(1, ids, 0)
+            glBindFramebuffer(GL_FRAMEBUFFER, ids[0])
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureId, 0)
+            glBindFramebuffer(GL_FRAMEBUFFER, 0)
+            return ids[0]
+        }
+
+        fun genVboId(buffer: FloatBuffer) : Int {
+            val ids = IntArray(1)
+            glGenBuffers(1, ids, 0)
+            glBindBuffer(GL_ARRAY_BUFFER, ids[0])
+            glBufferData(GL_ARRAY_BUFFER, buffer.remaining() * 4, buffer, GL_STATIC_DRAW)
+//            glBufferSubData(GL_ARRAY_BUFFER, 0, buffer.remaining() * 4, buffer)
+            glBindBuffer(GL_ARRAY_BUFFER, 0)
             return ids[0]
         }
 

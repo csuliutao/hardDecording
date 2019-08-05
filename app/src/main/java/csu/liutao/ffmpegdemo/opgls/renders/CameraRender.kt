@@ -16,12 +16,20 @@ import csu.liutao.ffmpegdemo.opgls.GlUtils
 import csu.liutao.ffmpegdemo.opgls.programs.CameraProgram
 import java.io.FileOutputStream
 import android.graphics.Bitmap
+import android.opengl.GLES20
+import csu.liutao.ffmpegdemo.R
+import csu.liutao.ffmpegdemo.opgls.OpglCodecInputHelper
 import csu.liutao.ffmpegdemo.opgls.OpglFileManger
 import csu.liutao.ffmpegdemo.opgls.ReadPixesConvert
+import csu.liutao.ffmpegdemo.opgls.programs.InputCodecProgram
 
 
 class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceView.Renderer {
     private var program = CameraProgram()
+    private var codecProgram = InputCodecProgram()
+    private var codecHelper: OpglCodecInputHelper? = null
+    private var sharedTexureId = -1
+    private var frameId = -1
     private var textureId = -1
     private lateinit var surfaceTexture: SurfaceTexture
     val handler = Handler()
@@ -41,7 +49,7 @@ class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceV
     private var isSaved = false
 
     @Volatile
-    private var recordListener : OnSaveFrameListener? = null
+    private var isRecording = false
 
     private lateinit var picConvert : ReadPixesConvert
     private var sizeListener: OnSizeChangeListener? = null
@@ -54,10 +62,13 @@ class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceV
             isSaved = true
             return
         }
+        glBindFramebuffer(GL_FRAMEBUFFER, frameId)
         glClear(GL_COLOR_BUFFER_BIT)
         program.onDrawFrame()
-        if (!isPic && recordListener != null) {
-            recordListener!!.onSave(picConvert.convert180YUV())
+        glBindFramebuffer(GL_FRAMEBUFFER, 0)
+        codecProgram.draw()
+        if (!isPic && isRecording) {
+            codecHelper?.draw(codecProgram)
         }
     }
 
@@ -70,6 +81,9 @@ class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceV
         picConvert = ReadPixesConvert()
         picConvert.init(curWidth, curHeight)
         sizeListener?.onSizeChanged(curWidth, curHeight)
+        sharedTexureId = GlUtils.loadShareTextureId(width, height)
+        codecProgram.prepare(sharedTexureId)
+        frameId = GlUtils.loadFrameBuffer2DId(sharedTexureId)
     }
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
@@ -77,6 +91,7 @@ class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceV
         textureId = GlUtils.loadExternTextureId()
         surfaceTexture = SurfaceTexture(textureId)
         program.onSurfaceCreated(context, surfaceTexture, textureId)
+        codecProgram.prepare(context, R.raw.img_base_vertex, R.raw.img_base_frag)
         initCamera()
     }
 
@@ -123,6 +138,7 @@ class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceV
     fun stop() {
         cameraSession?.stopRepeating()
         isSaved = true
+        isRecording = false
     }
 
     fun save(listener : OnSavePictureListener) {
@@ -138,8 +154,8 @@ class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceV
         outputStream.close()
     }
 
-    fun startRecord(listener : OnSaveFrameListener) {
-        recordListener = listener
+    fun startRecord() {
+        isRecording = true
     }
 
     fun release() {
@@ -147,14 +163,15 @@ class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceV
         cameraSession = null
         cameraDevice?.close()
         cameraDevice = null
+        codecHelper?.destory()
+    }
+
+    fun init(inputSurface: Surface) {
+        codecHelper = OpglCodecInputHelper(inputSurface)
     }
 
     interface OnSavePictureListener {
         fun onSave(sucess : Boolean)
-    }
-
-    interface OnSaveFrameListener {
-        fun onSave(bytes : ByteArray)
     }
 
     interface OnSizeChangeListener{

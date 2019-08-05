@@ -7,13 +7,15 @@ import android.os.Handler
 import android.os.HandlerThread
 import android.view.Surface
 
-class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback, val surface: Surface? = null, val codeFlag : Int = MediaCodec.CONFIGURE_FLAG_ENCODE){
+class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback, val surface: Surface? = null, val codeFlag : Int = MediaCodec.CONFIGURE_FLAG_ENCODE, val isInputSurface : Boolean = false){
     private var codec : MediaCodec? = null
 
     @Volatile
     private var isStart = false
 
-    fun start(listener : OnInputSurfaceAvaiableListener? = null) {
+    var inputSurface : Surface? = null
+
+    fun start() {
         val type = format.getString(MediaFormat.KEY_MIME)
         if (codeFlag == 0) {
             codec = MediaCodec.createDecoderByType(type)
@@ -26,8 +28,8 @@ class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback, 
         } else {
             codec!!.setCallback(callback)
         }
-        if (listener != null) {
-            listener.onAvailiable(codec!!.createInputSurface())
+        if (isInputSurface) {
+            inputSurface = codec!!.createInputSurface()
         }
         isStart = true
         codec!!.start()
@@ -72,9 +74,5 @@ class CodecManager(val format: MediaFormat, val callback : MediaCodec.Callback, 
             avcThread?.quitSafely()
             avcThread = null
         }
-    }
-
-    interface OnInputSurfaceAvaiableListener {
-        fun onAvailiable(surface : Surface)
     }
 }

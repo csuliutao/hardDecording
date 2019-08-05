@@ -10,55 +10,27 @@ import csu.liutao.ffmpegdemo.opgls.renders.CameraRender
 import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
-class OpglAvcRecord(val muxer : MuxerManger , queueSize : Int = 15) {
+class OpglAvcRecord(val muxer : MuxerManger) {
     private var cameraRender: CameraRender? = null
     private var codecMgr : CodecManager? = null
-    private lateinit var queue : LinkedBlockingDeque<MediaInfo>
     private val lock = ReentrantReadWriteLock()
-
-    @Volatile
-    private var flag = MediaCodec.BUFFER_FLAG_CODEC_CONFIG
 
     private val codecCallback = object : LockCodecCallback(lock) {
 
-        override fun onInput(codec: MediaCodec, index: Int) {
-            if (codecMgr == null || !codecMgr!!.isCodec()) {
-                queue.clear()
-                return
-            }
-            val buffer = codec.getInputBuffer(index)
-            buffer.clear()
-            val info = queue.take()
-            buffer.put(info.bytes, info.offset, info.size)
-            muxer.setStartTime()
-            codec.queueInputBuffer(index, info.offset, info.size, System.nanoTime() / 1000 - muxer.getStartTime(), flag)
-            if (flag == MediaCodec.BUFFER_FLAG_CODEC_CONFIG) flag = MediaCodec.BUFFER_FLAG_KEY_FRAME
-
-        }
+        override fun onInput(codec: MediaCodec, index: Int) = Unit
 
         override fun onOutput(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
+            Utils.log("opengl info = "+ info.size)
             if (codecMgr == null || !codecMgr!!.isCodec()) return
             val buffer = codec.getOutputBuffer(index)
             muxer.write(buffer, info, true)
             codec.releaseOutputBuffer(index, false)
-
         }
 
         override fun onOutputFormatChanged(codec: MediaCodec, format: MediaFormat) {
             muxer.addTrack(format, true)
             muxer.start()
         }
-    }
-
-    private val frameListener = object : CameraRender.OnSaveFrameListener {
-        override fun onSave(bytes: ByteArray) {
-            Utils.log("start codec")
-            queue.offer(MediaInfo(bytes, 0, bytes.size))
-        }
-    }
-
-    init {
-        queue = LinkedBlockingDeque(queueSize)
     }
 
     fun prepare(context : Context) : CameraRender{
@@ -69,10 +41,11 @@ class OpglAvcRecord(val muxer : MuxerManger , queueSize : Int = 15) {
                 val format = MediaFormat.createVideoFormat(MediaFormat.MIMETYPE_VIDEO_AVC, height, width)
                 format.setInteger(MediaFormat.KEY_BIT_RATE, width * height * 5)
                 format.setInteger(MediaFormat.KEY_FRAME_RATE, 25)
-                format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatYUV420Flexible)
+                format.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface)
                 format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, 1)
-                codecMgr = CodecManager(format, codecCallback)
+                codecMgr = CodecManager(format, codecCallback, null, MediaCodec.CONFIGURE_FLAG_ENCODE, true)
                 codecMgr!!.start()
+                cameraRender!!.init(codecMgr!!.inputSurface!!)
             }
         })
         return cameraRender!!
@@ -94,6 +67,6 @@ class OpglAvcRecord(val muxer : MuxerManger , queueSize : Int = 15) {
     }
 
     fun start() {
-        cameraRender?.startRecord(frameListener)
+        cameraRender?.startRecord()
     }
 }

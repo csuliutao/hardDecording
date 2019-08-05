@@ -1,28 +1,21 @@
 package csu.liutao.ffmpegdemo.opgls.programs
 
 import android.content.Context
-import android.opengl.GLES20
-import android.opengl.GLES30.*
-import csu.liutao.ffmpegdemo.R
+import android.opengl.GLES30
 import csu.liutao.ffmpegdemo.opgls.GlUtils
 import csu.liutao.ffmpegdemo.opgls.OpglFileManger
 import csu.liutao.ffmpegdemo.opgls.VertexAttribHandler
-import csu.liutao.ffmpegdemo.opgls.abs.IProgram
 
-class ImgProgram : IProgram {
+class InputCodecProgram : IInputTextureProgram {
     val pos = 0
     val coord = 1
     val unit = 2
-    /*val red = 3
-    val green = 4
-    val blue = 5
-    val alpha = 6*/
 
     val floats = floatArrayOf(
-        -1f, 1f, 0f, 0f,
-        -1f, -1f, 0f, 1f,
-        1f, -1f, 1f, 1f,
-        1f, 1f, 1f, 0f
+        -1f, 1f, 0f, 1f,
+        -1f, -1f, 0f, 0f,
+        1f, -1f, 1f, 0f,
+        1f, 1f, 1f, 1f
     )
 
     val vertexs = GlUtils.getDirectFloatBuffer(floats)
@@ -32,39 +25,38 @@ class ImgProgram : IProgram {
 
     private var textureId = -1
 
+    override fun prepare(textureId: Int) {
+        this.textureId = textureId
+    }
 
     override fun prepare(context: Context, vetexId: Int, fragmentId: Int) {
         curProgram =
             GlUtils.initProgramWithShaderResource(context, vetexId, fragmentId)
-        attribHandler.addBuffer(vertexs, true)
+        attribHandler.addBuffer(vertexs)
 
         attribHandler.addLocationInfo(pos,
-            VertexAttribHandler.AttribInfo(2, GL_FLOAT, 4 * 4)
+            VertexAttribHandler.AttribInfo(2, GLES30.GL_FLOAT, 4 * 4)
         )
         attribHandler.addLocationInfo(coord,
-            VertexAttribHandler.AttribInfo(2, GL_FLOAT, 4 * 4)
+            VertexAttribHandler.AttribInfo(2, GLES30.GL_FLOAT, 4 * 4)
         )
-        textureId = GlUtils.loadTexture(context, OpglFileManger.instance.getLastPic())
     }
 
     override fun draw() {
-        glUseProgram(curProgram)
+        GLES30.glUseProgram(curProgram)
 
-        glActiveTexture(GL_TEXTURE0)
-        glBindTexture(GL_TEXTURE_2D, textureId)
-        glUniform1i(unit, 0)
+        GLES30.glActiveTexture(GLES30.GL_TEXTURE0)
+        GLES30.glBindTexture(GLES30.GL_TEXTURE_2D, textureId)
+        GLES30.glUniform1i(unit, 0)
 
         val poss = intArrayOf(pos, coord)
         attribHandler.enableAttribute(poss)
         attribHandler.bindAttribute(coord, 2)
         attribHandler.bindAttribute(pos, 0)
 
-        glDrawArrays(GL_TRIANGLE_FAN, 0, 4)
+        GLES30.glDrawArrays(GLES30.GL_TRIANGLE_FAN, 0, 4)
         attribHandler.disableAttribute(poss)
     }
 
-    /**
-     * 展示图片，不做正交，透视转换
-     */
     override fun initScreenSize(width: Int, height: Int) = Unit
 }
