@@ -31,7 +31,7 @@ class MainRecycleAdapter(val context : Context): RecyclerView.Adapter<MainRecycl
         intents.add(Intent(context, PictureActivity::class.java))
 
         /*decs.add("camera vedio")
-        intents.add(Intent(context, VideosActivity::class.java))*/
+        intents.add(Intent(shareContext, VideosActivity::class.java))*/
 
         decs.add("aac+h264 音视频录制播放")
         intents.add(Intent(context, MediasActivity::class.java))

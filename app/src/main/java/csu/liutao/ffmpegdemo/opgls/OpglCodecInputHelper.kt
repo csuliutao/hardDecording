@@ -3,15 +3,26 @@ package csu.liutao.ffmpegdemo.opgls
 import android.opengl.*
 import android.view.Surface
 import android.opengl.EGL14.*
+import android.os.Handler
+import android.os.HandlerThread
+import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.opgls.programs.IInputTextureProgram
 import java.lang.Exception
 
-class OpglCodecInputHelper(val inputSurface : Surface) {
+class OpglCodecInputHelper(val inputSurface : Surface, val shareContext : EGLContext = eglGetCurrentContext()) {
     private var eglSurface: EGLSurface? = null
     private var eglDisplay: EGLDisplay? = null
     private var eglContext: EGLContext? = null
+    private val thread = HandlerThread("OpglCodecInputHelper")
+    private lateinit var handler: Handler
 
     init {
+        thread.start()
+        handler = Handler(thread.looper)
+        handler.post { prepare() }
+    }
+
+    private fun prepare() {
         eglDisplay = eglGetDisplay(EGL_DEFAULT_DISPLAY)
         val configs = arrayOfNulls<EGLConfig>(1)
         val conAttr = intArrayOf(
@@ -34,21 +45,28 @@ class OpglCodecInputHelper(val inputSurface : Surface) {
             EGL_CONTEXT_CLIENT_VERSION, 3,
             EGL_NONE
         )
-        eglContext = eglCreateContext(eglDisplay, configs[0], eglGetCurrentContext(), contextAttr, 0)
-        if (eglContext == EGL_NO_CONTEXT) throw Exception("create context error")
+        eglContext = eglCreateContext(eglDisplay, configs[0], shareContext, contextAttr, 0)
+        if (eglContext == EGL_NO_CONTEXT) throw Exception("create shareContext error")
     }
 
     fun draw(program : IInputTextureProgram) {
-        eglMakeCurrent(eglDisplay,eglSurface, eglSurface, eglContext)
-        program.draw()
-        eglSwapBuffers(eglDisplay, eglSurface)
+        handler.post {
+            Utils.log("opgl codec helper draw")
+            if (!eglMakeCurrent(eglDisplay,eglSurface, eglSurface, eglContext)) throw Exception("make current error")
+            program.draw()
+            eglSwapBuffers(eglDisplay, eglSurface)
+            Utils.log("opgl other draw finished")
+        }
     }
 
     fun destory() {
-        eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)
-        eglSurface = null
-        eglContext = null
-        eglTerminate(eglDisplay)
-        eglDisplay = null
+        handler.post {
+            eglMakeCurrent(eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT)
+            eglSurface = null
+            eglContext = null
+            eglTerminate(eglDisplay)
+            eglDisplay = null
+        }
+        thread.quitSafely()
     }
 }

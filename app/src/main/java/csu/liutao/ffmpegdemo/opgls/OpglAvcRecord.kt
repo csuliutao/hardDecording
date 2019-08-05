@@ -7,7 +7,6 @@ import android.media.MediaFormat
 import csu.liutao.ffmpegdemo.Utils
 import csu.liutao.ffmpegdemo.medias.*
 import csu.liutao.ffmpegdemo.opgls.renders.CameraRender
-import java.util.concurrent.LinkedBlockingDeque
 import java.util.concurrent.locks.ReentrantReadWriteLock
 
 class OpglAvcRecord(val muxer : MuxerManger) {
@@ -16,13 +15,14 @@ class OpglAvcRecord(val muxer : MuxerManger) {
     private val lock = ReentrantReadWriteLock()
 
     private val codecCallback = object : LockCodecCallback(lock) {
+        private val time = ValidStartTime()
 
         override fun onInput(codec: MediaCodec, index: Int) = Unit
 
         override fun onOutput(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
-            Utils.log("opengl info = "+ info.size)
             if (codecMgr == null || !codecMgr!!.isCodec()) return
             val buffer = codec.getOutputBuffer(index)
+            time.checkValid(info)
             muxer.write(buffer, info, true)
             codec.releaseOutputBuffer(index, false)
         }

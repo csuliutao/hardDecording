@@ -3,7 +3,6 @@ package csu.liutao.ffmpegdemo.opgls.programs
 import android.content.Context
 import android.opengl.GLES30
 import csu.liutao.ffmpegdemo.opgls.GlUtils
-import csu.liutao.ffmpegdemo.opgls.OpglFileManger
 import csu.liutao.ffmpegdemo.opgls.VertexAttribHandler
 
 class InputCodecProgram : IInputTextureProgram {

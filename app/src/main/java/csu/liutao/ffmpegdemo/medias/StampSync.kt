@@ -3,10 +3,10 @@ package csu.liutao.ffmpegdemo.medias
 import csu.liutao.ffmpegdemo.Utils
 
 class StampSync {
-    private var baseRelativeTime = 0L
+    private var baseRelativeTime = -1L
 
     private fun init() {
-        if (baseRelativeTime == 0L) baseRelativeTime = System.currentTimeMillis()
+        if (baseRelativeTime == -1L) baseRelativeTime = System.currentTimeMillis()
     }
 
     fun waitTime(curTime: Long) {

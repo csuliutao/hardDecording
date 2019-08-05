@@ -62,6 +62,7 @@ class CameraRender(val context: Context,val isPic : Boolean = true) : GLSurfaceV
             isSaved = true
             return
         }
+        Utils.log("opgl get the texture")
         glBindFramebuffer(GL_FRAMEBUFFER, frameId)
         glClear(GL_COLOR_BUFFER_BIT)
         program.onDrawFrame()
