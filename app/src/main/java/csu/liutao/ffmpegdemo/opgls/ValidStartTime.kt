@@ -4,15 +4,16 @@ import android.media.MediaCodec
 import csu.liutao.ffmpegdemo.Utils
 
 class ValidStartTime {
-    private var time = -1L
+    private var time = 0L
 
     fun checkValid (info: MediaCodec.BufferInfo){
-        if (time == -1L) {
+        Utils.log("opgl input presentationTimeUs= "+ info.presentationTimeUs)
+        if (time == 0L || info.presentationTimeUs == 0L) {
             time = info.presentationTimeUs
             info.presentationTimeUs = 0L
         } else {
             info.presentationTimeUs -= time;
         }
-        Utils.log("")
+        Utils.log("opgl info.presentationTimeUs = "+ info.presentationTimeUs)
     }
 }
