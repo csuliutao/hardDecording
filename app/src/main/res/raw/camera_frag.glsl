@@ -7,7 +7,8 @@ out vec4 o_fragColor;
 
 void main() {
     o_fragColor = texture(f_unit, f_coord);
-    o_fragColor.r = o_fragColor.r * 0.4;
-    o_fragColor.g = o_fragColor.g * 0.1;
-    o_fragColor.b = o_fragColor.b * 0.7;
+    float temp = o_fragColor.r;
+    o_fragColor.r =  o_fragColor.g;
+    o_fragColor.g = o_fragColor.b;
+    o_fragColor.b = temp;
 }
